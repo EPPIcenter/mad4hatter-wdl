@@ -11,8 +11,8 @@ Add mad4hatter/scientific overview here
 2. For the `sample` table, while you can always add additional columns, the minimum that will be required are the 
    following columns:
 - `sample_id` - The sample ID 
-- `read1` - The path to the forward FASTQ file
-- `read2` The path to the reverse FASTQ file
+- `forward` - The path to the forward FASTQ file
+- `reverse` The path to the reverse FASTQ file
 3. The easiest way to add this to Terra is to create a tsv (for example, called `sample.tsv`). Ensure the primary 
    key header is labeled using the name of the file, followed with `_id` (for example, `sample_id` in this case). The 
    remaining columns can have any headers that make sense for the metadata if `read1` and `read2` are not desired. 

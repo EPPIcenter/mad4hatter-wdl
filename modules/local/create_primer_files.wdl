@@ -3,7 +3,7 @@ version 1.0
 task create_primer_files {
     input {
         File amplicon_info_ch
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

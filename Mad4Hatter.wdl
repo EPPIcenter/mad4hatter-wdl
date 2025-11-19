@@ -44,6 +44,7 @@ workflow MAD4HatTeR {
         String output_cloud_directory
         Int dada2_additional_memory = 0
         String? dada2_runtime_size
+        # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
     }
 

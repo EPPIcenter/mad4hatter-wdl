@@ -4,7 +4,7 @@ task mask_reference_homopolymers {
     input {
         File refseq_fasta
         Int homopolymer_threshold
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

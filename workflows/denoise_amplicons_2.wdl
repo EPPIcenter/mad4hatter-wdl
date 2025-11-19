@@ -18,7 +18,7 @@ workflow denoise_amplicons_2 {
         Boolean mask_homopolymers
         File? genome
         Array[File]? targeted_reference_files
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Process clusters if just_concatenate is true

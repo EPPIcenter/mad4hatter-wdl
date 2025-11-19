@@ -4,7 +4,7 @@ task build_pseudocigar {
     input {
         File alignments
         Int cpus = 1
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

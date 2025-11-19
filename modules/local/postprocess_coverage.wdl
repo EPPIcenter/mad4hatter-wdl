@@ -6,7 +6,7 @@ task postprocess_coverage {
         File clusters
         File sample_coverage
         File amplicon_coverage
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

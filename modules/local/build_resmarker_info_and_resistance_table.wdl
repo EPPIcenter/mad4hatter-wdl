@@ -10,7 +10,7 @@ task build_resmarker_info_and_resistance_table {
         File? resmarkers_info_tsv
         String? resmarker_info_output_path = "resmarker_info.tsv"
         Int cpus = 1
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

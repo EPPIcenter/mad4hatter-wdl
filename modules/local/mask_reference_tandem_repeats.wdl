@@ -5,7 +5,7 @@ task mask_reference_tandem_repeats {
         File refseq_fasta
         Int min_score
         Int max_period
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

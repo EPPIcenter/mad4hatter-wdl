@@ -5,7 +5,7 @@ task build_amplicon_info {
         Array[String] pools
         Array[File] amplicon_info_files
         String? amplicon_info_output = "amplicon_info.tsv"
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<
@@ -28,7 +28,7 @@ task build_targeted_reference {
     input {
         Array[File] reference_input_paths
         String? reference_output_path = "reference.fasta"
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

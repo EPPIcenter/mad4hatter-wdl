@@ -16,7 +16,7 @@ workflow mask_low_complexity_regions {
         Boolean mask_homopolymers = true
         Int homopolymer_threshold = 5
         File alignments
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     if (mask_tandem_repeats) {

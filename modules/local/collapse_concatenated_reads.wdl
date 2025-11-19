@@ -3,7 +3,7 @@ version 1.0
 task collapse_concatenated_reads {
     input {
         File clusters
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

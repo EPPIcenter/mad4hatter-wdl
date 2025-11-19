@@ -13,6 +13,7 @@ workflow Mad4HatterPostProcessing {
         Boolean mask_homopolymers = true
         File refseq_fasta
         File? masked_fasta
+        # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
     }
 

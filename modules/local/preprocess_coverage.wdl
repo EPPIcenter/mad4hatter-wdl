@@ -4,7 +4,7 @@ task preprocess_coverage {
     input {
         Array[File] sample_coverages
         Array[File] amplicon_coverages
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

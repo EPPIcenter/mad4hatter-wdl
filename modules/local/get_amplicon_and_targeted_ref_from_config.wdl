@@ -4,7 +4,7 @@ version 1.0
 task get_amplicon_and_targeted_ref_from_config {
     input {
         Array[String] pools
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
         String pool_options_json = "/opt/mad4hatter/conf/terra_panel.json" # located on docker
     }
 

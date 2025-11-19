@@ -12,6 +12,7 @@ workflow Mad4HatterQcOnly {
         String sequencer
         Int cutadapt_minlen = 100
         Int allowed_errors = 0
+        # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
     }
 

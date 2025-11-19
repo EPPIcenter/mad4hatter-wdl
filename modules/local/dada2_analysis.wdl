@@ -12,7 +12,7 @@ task dada2_analysis {
         Boolean just_concatenate
         Int additional_memory
         String? dada2_runtime_size
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Typical compression ratio for genomic data

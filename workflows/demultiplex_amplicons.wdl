@@ -11,7 +11,7 @@ workflow demultiplex_amplicons {
         String sequencer
         Int cutadapt_minlen
         Int allowed_errors
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     Array[Pair[File, File]] read_pairs = zip(forward_fastqs, reverse_fastqs)

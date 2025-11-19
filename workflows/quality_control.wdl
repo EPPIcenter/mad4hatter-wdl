@@ -11,7 +11,7 @@ workflow quality_control {
         Array[File] amplicon_coverage_files
         File? alleledata
         File? clusters
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Initial Preprocessing
@@ -32,7 +32,8 @@ workflow quality_control {
                 alleledata = defined_alleledata,
                 clusters = defined_clusters,
                 sample_coverage = preprocess_coverage.sample_coverage,
-                amplicon_coverage = preprocess_coverage.amplicon_coverage
+                amplicon_coverage = preprocess_coverage.amplicon_coverage,
+                docker_image = docker_image
         }
     }
 

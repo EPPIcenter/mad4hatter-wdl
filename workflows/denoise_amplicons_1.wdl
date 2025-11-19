@@ -13,7 +13,7 @@ workflow denoise_amplicons_1 {
         Boolean just_concatenate
         Int additional_memory
         String? dada2_runtime_size
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     call dada2_analysis.dada2_analysis {

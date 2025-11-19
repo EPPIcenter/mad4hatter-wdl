@@ -6,7 +6,7 @@ task align_to_reference_and_filter_asvs {
         File refseq_fasta
         File amplicon_info_ch
         Int cpus = 1
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Pulled default value from https://github.com/EPPIcenter/mad4hatter/blob/0fdf688d8bef6b1407de66ed2644a2d26635015d/nextflow.config#L32

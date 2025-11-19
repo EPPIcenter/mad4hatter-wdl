@@ -16,7 +16,7 @@ workflow prepare_reference_sequences {
         Int trf_max_period = 3
         Boolean mask_homopolymers = true
         Int homopolymer_threshold = 5
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Validate that exactly one of genome or targeted_reference_files is provided

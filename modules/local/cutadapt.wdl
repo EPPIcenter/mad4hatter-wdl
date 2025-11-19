@@ -10,7 +10,7 @@ task cutadapt {
         String sequencer
         Int allowed_errors
         Int cpus = 1
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     command <<<

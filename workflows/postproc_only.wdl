@@ -12,7 +12,7 @@ workflow postproc_only {
         Boolean mask_homopolymers
         File refseq_fasta
         File? masked_fasta
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     # Call the denoise_amplicons_2 workflow

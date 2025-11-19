@@ -11,7 +11,7 @@ workflow resistance_marker_module {
         File amplicon_info_ch
         File? principal_resmarkers
         File? resmarkers_info_tsv
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image
     }
 
     call build_resmarker_info_and_resistance_table.build_resmarker_info_and_resistance_table {

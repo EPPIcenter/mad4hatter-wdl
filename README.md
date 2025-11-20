@@ -41,8 +41,8 @@ If you have _already_ imported your data into your workspace's GCP bucket, you c
 creating metadata tables:
 
 1. To run the main [Mad4Hatter](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4Hatter:main?tab=info) workflow, you'll need to set up your Terra 
-   workspace with the appropriate metadata tables. For this example, we'll call our example  
-   table `sample`. However, this can be customized if you'd prefer a different name.
+   workspace with the appropriate metadata tables. For this example, we'll call our example table `sample`. However, 
+   this can be customized if you'd prefer a different name.
 2. For the `sample` table, while you can always add additional columns, the minimum that will be required are the 
    following columns:
       - `sample_id` - The sample ID 

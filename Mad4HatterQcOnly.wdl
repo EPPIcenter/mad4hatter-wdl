@@ -2,11 +2,12 @@ version 1.0
 
 import "workflows/process_inputs.wdl" as ProcessInputs
 import "workflows/qc_only.wdl" as QcOnly
+import "modules/local/get_amplicon_and_targeted_ref_from_config.wdl" as GetAmpliconAndTargetedRefFromConfig
 
 workflow Mad4HatterQcOnly {
     input {
         Array[String] pools
-        Array[File] amplicon_info_files
+        Array[File]? amplicon_info_files
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
         String sequencer
@@ -16,11 +17,26 @@ workflow Mad4HatterQcOnly {
         String docker_image = "eppicenter/mad4hatter:develop"
     }
 
+    File pool_options_json = "/opt/mad4hatter/conf/terra_panel.json" # Optional custom pool options JSON file. Needs to be on docker image.
+
+    Boolean amplicon_files_provided = defined(amplicon_info_files)
+    if (!amplicon_files_provided) {
+        call GetAmpliconAndTargetedRefFromConfig.get_amplicon_and_targeted_ref_from_config {
+            input:
+                pools = pools,
+                pool_options_json = pool_options_json,
+                docker_image = docker_image
+        }
+    }
+
+    # Determine final amplicon info files to use. If provided, use those; otherwise, use from config.
+    Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
+
     call ProcessInputs.generate_amplicon_info {
         input:
             pools = pools,
             docker_image = docker_image,
-            amplicon_info_files = amplicon_info_files
+            amplicon_info_files = amplicon_info_files_final
     }
 
     call QcOnly.qc_only {

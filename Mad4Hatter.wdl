@@ -26,7 +26,7 @@ workflow MAD4HatTeR {
         Array[File] reverse_fastqs # List of reverse fastqs. Must be in correct order.
         Array[File]? amplicon_info_files
         Array[File]? targeted_reference_files
-        File? refseq_fasta # Path to targeted reference sequences (optional, auto-generated if not provided)
+        File? refseq_fasta # Path to reference sequences (optional, auto-generated if not provided)
         File? genome
         Float omega_a = 0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001 # Level of statistical evidence required for DADA2 to infer a new ASV
         String dada2_pool = "pseudo" # Pooling method for DADA2 to process ASVs [Options: pseudo (default), true, false]

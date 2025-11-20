@@ -60,8 +60,8 @@ creating metadata tables:
 ## Importing Workflows to Terra Workspace
 There are three workflows available to run - ([Mad4Hatter](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4Hatter:main?tab=info), [Mad4HatterPostProcessing](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4HatterPostProcessing:main?tab=info), and 
 [Mad4HatterQcOnly](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4HatterQcOnly:main?tab=info)). To import your desired workflow into your Terra workspace, please follow the instructions below:
-1. Create a new Terra workspace, use an existing one, or clone an existing one. See the directions above if you have not 
-   yet completed this step. Note that if you're cloning an existing workspace that already has your desired workflow(s) (for example, this template workspace), you can skip the rest of these steps.
+1. First, create a new Terra workspace, use an existing one, or clone an existing one. See the directions above if you 
+   have not yet completed this step. Note that if you're cloning an existing workspace that already has your desired workflow(s) (for example, this template workspace), you can skip the rest of these steps.
 2. Navigate to the "Workflows" tab in your Terra workspace.
 3. Click on "Find a Workflow" and select the "Dockstore.org" option. This will bring you to the Dockstore website.
 4. In Dockstore, search for "MAD4HatTeR" and select the appropriate workflow from the search results.

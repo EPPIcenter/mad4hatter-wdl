@@ -73,13 +73,13 @@ There are three workflows available to run - ([Mad4Hatter](https://dockstore.org
 ## Running the main Mad4Hatter Workflow
 1. Navigate to the "Workflows" tab in your Terra workspace. 
 2. If running [Mad4Hatter](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4Hatter:main?tab=info) workflow, select the workflow under the "Workflows" tab. This will bring up the configuration page. 
-   First, select the "Run workflow(s) with inputs defined by data table" option. Under "Step 1: Select data table", 
-   you'll see an option that is named like `YOUR_TABLE_set`. This should be your table that contains the forward and 
-   reverse reads with the _suffix `_set` appended to it. Select that table. For example, if your table is named 
+   First, select the `Run workflow(s) with inputs defined by data table` option. Next, Under `Step 1: Select data 
+   table`, you'll see an option that is named like `YOUR_TABLE_set`. This should be your table that contains the forward and 
+   reverse reads with the suffix `_set` appended to it. Select that table. For example, if your table is named 
    `sample`, select `sample_set`.
 3. Next, click on "Select Data", and select all the samples that should be processed together as part of a dataset. 
-   Optionally, you can rename the new set that gets generated if you'd like. Otherwise, it will have an 
-   auto-generated name with the timestamp appended. Click "OK". 
+   In this popup, you can optionally select a name for the new set that gets generated if you'd like. Otherwise, it will 
+   have an auto-generated name with the timestamp appended. Click "OK". 
 3. Next, you'll have to configure your inputs. The two inputs to pay attention to specifically are `forward_fastqs` and 
    `reverse_fastqs`. The "Input value" for `forward_fastqs` should be `this.{your_table_name}s.read1` (`read1` is the 
    column header, so if you named it something different, use that instead). The input for `reverse_fastqs` should 

@@ -10,7 +10,9 @@ workflow postproc_only {
         Boolean just_concatenate
         Boolean mask_tandem_repeats
         Boolean mask_homopolymers
-        File refseq_fasta
+        File? refseq_fasta
+        File? genome
+        Array[File]? targeted_reference_files
         File? masked_fasta
         String docker_image
     }
@@ -26,6 +28,8 @@ workflow postproc_only {
             masked_fasta = masked_fasta,
             mask_tandem_repeats = mask_tandem_repeats,
             mask_homopolymers = mask_homopolymers,
+            genome = genome,
+            targeted_reference_files = targeted_reference_files,
             docker_image = docker_image
     }
 

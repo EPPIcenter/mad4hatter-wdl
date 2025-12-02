@@ -1,5 +1,5 @@
 # MAD4HATTER
-
+![Mad4hatter logo](https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg)
 ## Creating and Setting Up Your Terra Workspace for Mad4Hatter
 
 ### Creating a Workspace

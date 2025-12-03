@@ -1,40 +1,26 @@
-# ![Mad4hatter logo](https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg) MAD4HATTER
+# MAD4HATTER ![Mad4hatter logo](https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg)
+
+Welcome to the Mad4hatter workspace! 
 
 **Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina Amplicon sequencing data. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration.
-
-The pipeline was first implemented in Nextflow, and the original version can be found in the [mad4hatter GitHub repository](https://github.com/EPPIcenter/mad4hatter). This repository provides a functionally equivalent implementation in WDL, enabling the pipeline to be executed on [Terra](https://terra.bio/). If you are not planning to run the workflow in Terra, we recommend using the original Nextflow pipeline.
-
-If you are already familiar with Terra, you can launch the workflow directly from the [template workspace](https://app.terra.bio/#workspaces/gates-malaria/Mad4Hatter). If not, the remainder of this README will guide you through setup and usage. There is also documentation included in the template workspace. 
 
 ## Workflow Overview 
 
 This repository contains three workflows:
-* `Mad4Hatter` - The primary and most commonly used workflow. It runs the full pipeline, from raw FASTQs through microhaplotype calling and drug-resistance profiling. More details can be found below and in the dedicated [README](./Mad4Hatter.README.md).
-* `Mad4HatterQcOnly` - A lightweight version of the pipeline that runs only the steps required to generate basic QC metrics. More details are available [here](./Mad4HatterQcOnly.README.md).
-* `Mad4HatterPostProcessing` - A post-processing–only workflow that begins after DADA2. It requires a pre-generated allele table as input. More details can be found [here](./Mad4HatterPostProcessing.README.md).
+* `Mad4Hatter` - The primary and most commonly used workflow. It runs the full pipeline, from raw FASTQs through microhaplotype calling and drug-resistance profiling. More details can be found below.
+* `Mad4HatterQcOnly` - A lightweight version of the pipeline that runs only the steps required to generate basic QC metrics. More details can be found below.
+* `Mad4HatterPostProcessing` - A post-processing–only workflow that begins after DADA2. It requires a pre-generated allele table as input. More details can be found below.
 
 ![Mad4hatter metro map](./assets/mad4hatter_metro.png)
 TODO: Add diagram about the steps in the pipeline showing the full thing, QC only, and postprocessing. 
 
 ## Creating and Setting Up Your Terra Workspace for Mad4Hatter
 
-To get started with Terra, you will need to create a Terra account. This process is straightforward and only takes a few minutes. If you would like to test the pipeline before setting up your own billing project, please reach out. 
-
-### Creating a Workspace
-To use Mad4Hatter in Terra, you'll first need to create a Terra workspace.
-
-#### Cloning a Workspace 
-The first option is to clone [this template workspace](https://app.terra.bio/#workspaces/gates-malaria/Mad4Hatter). This is the easiest option, and the recommended way to get started quickly.
-See directions [here](https://support.terra.bio/hc/en-us/articles/360026130851-How-to-clone-your-own-workspace) on cloning a Terra workspace.
-This workspace already has the Mad4Hatter workflow imported, so you can skip the "Importing Workflows to Terra 
-Workspace" section below if you choose this option. It also contains some 
+### Cloning a Workspace 
+To clone this template workspace see [these directions](https://support.terra.bio/hc/en-us/articles/360026130851-How-to-clone-your-own-workspace) on cloning a Terra workspace.
+This workspace already has the Mad4Hatter workflow imported and contains some 
 example data. 
-
-#### Creating a New Workspace 
-The second option is to create a new Terra workspace from scratch. To do this, click on "Workspaces" from the 
-dropdown menu in the top left corner of the Terra homepage. Then, click on the `+` button at the top left of the 
-page to create a new workspace. You'll be prompted to enter information about your new workspace. 
-
+TODO: add ref 
 
 ### Importing Data and Setting up Terra Metadata Tables
 See the directions below for two options - one for both importing new data into your Terra workspace's GCP bucket 
@@ -75,19 +61,6 @@ creating metadata tables:
    with the contents of the tsv. This table will be called `sample` (or whatever you named the tsv file).
 5. Next, import your workflows (see directions below). 
 
-## Importing Workflows to Terra Workspace
-There are three workflows available to run - ([Mad4Hatter](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4Hatter:main?tab=info), [Mad4HatterPostProcessing](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4HatterPostProcessing:main?tab=info), and 
-[Mad4HatterQcOnly](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4HatterQcOnly:main?tab=info)). To import your desired workflow into your Terra workspace, please follow the instructions below:
-1. First, create a new Terra workspace, use an existing one, or clone an existing one. See the directions above if you 
-   have not yet completed this step. Note that if you're cloning an existing workspace that already has your desired workflow(s) (for example, this template workspace), you can skip the rest of these steps.
-2. Navigate to the "Workflows" tab in your Terra workspace.
-3. Click on "Find a Workflow" and select the "Dockstore.org" option. This will bring you to the Dockstore website.
-4. In Dockstore, search for "MAD4HatTeR" and select the appropriate workflow from the search results.
-5. In the new page that opens, under "Launch with", select Terra.
-6. Enter your destination workspace name in the new page that opens and select "Import". 
-7. You will be redirected back to your Terra workspace, where you can configure and run the workflow (see directions 
-   below). 
-
 ## Running the main Mad4Hatter Workflow
 1. Navigate to the "Workflows" tab in your Terra workspace. 
 2. If running [Mad4Hatter](https://dockstore.org/workflows/github.com/broadinstitute/mad4hatter_wdls/Mad4Hatter:main?tab=info) workflow, select the workflow under the "Workflows" tab. This will bring up the configuration page. 
@@ -113,6 +86,7 @@ There are three workflows available to run - ([Mad4Hatter](https://dockstore.org
 6. After launching, you can monitor the progress of the workflow in the "Submission History" tab. By default, Terra 
    only displays workflows that have been launched in the past 30 days. If you want to see submission history from 
    all time, make sure you select "All submissions" from the Date range drop down at the top of the page. 
+
 
 ## Adding new panels
 

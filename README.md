@@ -1,4 +1,4 @@
-# ![Mad4hatter logo](https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg) MAD4HATTER
+# MAD4HATTER <img src="https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg" alt="Mad4hatter logo" height="40"> 
 
 **Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina Amplicon sequencing data. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration.
 

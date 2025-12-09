@@ -2,25 +2,22 @@
 
 Welcome to the Mad4hatter workspace! 
 
-**Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina Amplicon sequencing data. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration.
+**Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina Amplicon sequencing data. It processes raw FASTQ files and produces an allele table, core QC metrics, and drug-resistance information. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration.
 
 ## Workflow Overview 
 
 This repository contains three workflows:
-* `Mad4Hatter` - The primary and most commonly used workflow. It runs the full pipeline, from raw FASTQs through microhaplotype calling and drug-resistance profiling. More details can be found below.
-* `Mad4HatterQcOnly` - A lightweight version of the pipeline that runs only the steps required to generate basic QC metrics. More details can be found below.
-* `Mad4HatterPostProcessing` - A post-processing–only workflow that begins after DADA2. It requires a pre-generated allele table as input. More details can be found below.
+* **`Mad4Hatter`** - The primary and most commonly used workflow. It runs the full pipeline, from raw FASTQs through microhaplotype calling and drug-resistance profiling. More details can be found below.
+* **`Mad4HatterQcOnly`** - A lightweight version of the pipeline that runs only the steps required to generate basic QC metrics. More details can be found below.
+* **`Mad4HatterPostProcessing`** - A post-processing–only workflow that begins after DADA2. It requires a pre-generated allele table as input. More details can be found below.
 
 ![Mad4hatter metro map](./assets/mad4hatter_metro.png)
-TODO: Add diagram about the steps in the pipeline showing the full thing, QC only, and postprocessing. 
 
 ## Creating and Setting Up Your Terra Workspace for Mad4Hatter
 
 ### Cloning a Workspace 
 To clone this template workspace see [these directions](https://support.terra.bio/hc/en-us/articles/360026130851-How-to-clone-your-own-workspace) on cloning a Terra workspace.
-This workspace already has the Mad4Hatter workflow imported and contains some 
-example data. 
-TODO: add ref 
+This workspace already has the Mad4Hatter workflow imported and contains an example dataset including 5 samples [Brokhattingen, N., et. al (2024).](https://www.nature.com/articles/s41467-024-46535-x)
 
 ### Importing Data and Setting up Terra Metadata Tables
 See the directions below for two options - one for both importing new data into your Terra workspace's GCP bucket 
@@ -71,37 +68,51 @@ creating metadata tables:
 3. Next, click on "Select Data", and select all the samples that should be processed together as part of a dataset. 
    In this popup, you can optionally select a name for the new set that gets generated if you'd like. Otherwise, it will 
    have an auto-generated name with the timestamp appended. Click "OK". 
-3. Next, you'll have to configure your inputs. The two inputs to pay attention to specifically are `forward_fastqs` and 
+4. Next, you'll have to configure your inputs. The two inputs to pay attention to specifically are `forward_fastqs` and 
    `reverse_fastqs`. The "Input value" for `forward_fastqs` should be `this.{your_table_name}s.read1` (`read1` is the 
    column header, so if you named it something different, use that instead). The input for `reverse_fastqs` should 
    be `this.{your_table_name}s.read2` (or whatever you named that column if not `read2`). So for example, if your 
    table containing your forward and reverse reads is named `sample`, the inputs would be `this.samples.read1` and 
    `this.samples.read2` respectively. Be sure to make the table name plural by adding an `s` after it (`sample` vs. 
    `samples`). 
-4. The rest of the inputs can be configured as desired.
-5. Once all inputs are configured, you can click "Save" and then "Launch" to start the workflow. If everything was 
+5. The rest of the inputs can be configured as desired.
+6. Once all inputs are configured, you can click "Save" and then "Launch" to start the workflow. If everything was 
    configured correctly, you'll see "You are launching 1 workflow run in this submission." in the popup. If you see 
    that more than one workflow is being launched, go back through the configuration steps and ensure that a "set" of 
    samples has been selected, as this workflow is designed to run once per dataset. 
-6. After launching, you can monitor the progress of the workflow in the "Submission History" tab. By default, Terra 
+7. After launching, you can monitor the progress of the workflow in the "Submission History" tab. By default, Terra 
    only displays workflows that have been launched in the past 30 days. If you want to see submission history from 
    all time, make sure you select "All submissions" from the Date range drop down at the top of the page. 
 
-
-## Adding new panels
-
 ## Cost
 
-Although we can’t provide exact cost estimates for your specific dataset, the table below summarises example costs from running the full pipeline on a set of real datasets, varying both the number of targets and the number of samples. The cost shown reflects the total compute cost for each complete pipeline run across the full batch of samples.
+Although we can’t provide exact cost estimates for your specific dataset, the table below summarises example costs from running the full pipeline on a set of real datasets, varying both the number of targets and the number of samples. The cost shown reflects the total compute cost for each complete pipeline run across the full batch of samples, and then cost per sample (Total Cost/ Samples).
 
-| Panel Type               | Samples | Time                | Cost   |
-|--------------------------|---------|---------------------|--------|
-| PfPHAST (57 targets)     | 217     | 2 hours 43 minutes  | $1.17  |
-| PfPHAST (57 targets)     | 1,152   | 9 hours 41 minutes  | $7.42  |
-| MAD4HatTeR (243 targets) | 96      | 3 hours 28 minutes  | $1.01  |
-| MAD4HatTeR (243 targets) | 149     | 4 hours 53 minutes  | $1.55  |
-| MAD4HatTeR (243 targets) | 506     | 13 hours 2 minutes  | $7.02  |
-| MAD4HatTeR (243 targets) | 862     | 25 hours 13 minutes | $24.02 |
+| Panel Type               | Samples | Time                | Total Cost | Cost / Sample |
+|--------------------------|---------|---------------------|------------|---------------|
+| PfPHAST (57 targets)     | 217     | 2 hours 43 minutes  | $1.17      | $0.005        |
+| PfPHAST (57 targets)     | 1,152   | 9 hours 41 minutes  | $7.42      | $0.006        |
+| MAD4HatTeR (243 targets) | 96      | 3 hours 28 minutes  | $1.01      | $0.01         |
+| MAD4HatTeR (243 targets) | 149     | 4 hours 53 minutes  | $1.55      | $0.01         |
+| MAD4HatTeR (243 targets) | 506     | 13 hours 2 minutes  | $7.02      | $0.01         |
+| MAD4HatTeR (243 targets) | 862     | 25 hours 13 minutes | $24.02     | $0.03         |
+
+## Pre-configured Panels
+
+The pipeline supports several pre-configured panels. Specify your panel using the `pools` parameter when running the workflow.
+
+**MAD4HatTeR** (modular - combine pools as needed):
+- Available pools: `D1.1` (or `D1`), `R1.1` (or `R1`), `R2.1`, `R1.2` (or `R2`), `v1`, `v2`
+- Most common: `["D1","R1","R2"]`
+
+**PfPHAST** (modular):
+- Available pools: `M1.1` (or `M1`), `M2.1` (or `M2`), `M1.addon`
+
+**Other panels:**
+- `4cast`
+- `ama1`
+
+**Custom panels:** If your panel isn't listed, you can provide your own panel configuration files. Use the `amplicon_info_files` parameter along with either `genome` (whole genome reference) or `refseq_fasta` (targeted reference). See [example panel configurations](https://github.com/EPPIcenter/mad4hatter/tree/develop/panel_information) for reference.
 
 
 ## Contact info

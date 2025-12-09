@@ -13,33 +13,16 @@ task move_outputs {
         File amplicon_info_ch
         File reference_fasta
         File resmarkers_file
-        String output_cloud_directory
+        String output_directory
     }
 
-    # Remove trailing slashes from the output directory
-    # This ensures consistent formatting for subsequent checks and operations.
-    String sanitized_output_directory = sub(output_cloud_directory, "/+$", "")
-
-    # Use sub() with a regular expression to check for the prefix.
-    # This pattern matches the entire string if it starts with "gs://".
-    # If the pattern is found, a non-empty string is returned.
-    # If the pattern is not found, the original string is returned.
-    String matches_prefix = sub(sanitized_output_directory, "^gs://.*", "MATCH")
-
-    # Use a boolean variable to convert the string result to a boolean.
-    # "MATCH" will be true, while any other string will be false.
-    Boolean starts_with_gs = matches_prefix == "MATCH"
+    String bucket_name = sub(final_allele_table, ".*/(fc-[^/]+).*", "$1")
 
     command <<<
         set -e
 
-        echo "Sanitized output directory: ~{sanitized_output_directory}"
-        echo "Checking if output directory starts with 'gs://': ~{starts_with_gs}"
-
-        if [ "~{starts_with_gs}" != "true" ]; then
-            echo "ERROR: The output_cloud_directory directory does not start with 'gs://'."
-            exit 1
-        fi
+        # Get "now" timestamp for writing outputs
+        timestamp=$(date +"%Y-%m-%d_%H%M%S")
 
         # Function to copy a file and echo its destination path
         copy_file() {
@@ -48,14 +31,16 @@ task move_outputs {
             local filename=$(basename "$file")
 
             if [[ -n "$subdirectory" ]]; then
-                destination="~{sanitized_output_directory}/$subdirectory/$filename"
+                destination="gs://~{bucket_name}/~{output_directory}/$timestamp/$subdirectory/$filename"
             else
-                # Otherwise, copy directly under sanitized_output_directory
-                destination="~{sanitized_output_directory}/$filename"
+                # Otherwise, copy directly under output_directory
+                destination="gs://~{bucket_name}/~{output_directory}/$timestamp/$filename"
             fi
 
             echo "Copying $file to $destination"
             gcloud alpha storage cp "$file" "$destination"
+
+            echo $destination > $filename.file_path
         }
 
         # Copy individual files
@@ -73,17 +58,17 @@ task move_outputs {
     >>>
 
     output {
-        String allele_data = sanitized_output_directory + "/" + basename(final_allele_table)
-        String sample_coverage = sanitized_output_directory + "/" + basename(sample_coverage)
-        String amplicon_coverage = sanitized_output_directory + "/" + basename(amplicon_coverage)
-        String dada2_clusters = sanitized_output_directory + "/" + basename(dada2_clusters)
-        String resmarker_table = sanitized_output_directory + "/" + basename(resmarkers_output)
-        String resmarker_table_by_locus = sanitized_output_directory + "/" + basename(resmarkers_by_locus)
-        String resmarker_microhaplotype_table = sanitized_output_directory + "/" + basename(microhaps)
-        String all_mutations_table = sanitized_output_directory + "/" + basename(new_mutations)
-        String amplicon_info = sanitized_output_directory + "/" + basename(amplicon_info_ch)
-        String reference = sanitized_output_directory + "/" + basename(reference_fasta)
-        String resmarker_info = sanitized_output_directory + "/" + basename(resmarkers_file)
+        String allele_data = read_string("~{basename(final_allele_table)}.file_path")
+        String sample_coverage = read_string("~{basename(sample_coverage)}.file_path")
+        String amplicon_coverage = read_string("~{basename(amplicon_coverage)}.file_path")
+        String dada2_clusters = read_string("~{basename(dada2_clusters)}.file_path")
+        String resmarker_table = read_string("~{basename(resmarkers_output)}.file_path")
+        String resmarker_table_by_locus = read_string("~{basename(resmarkers_by_locus)}.file_path")
+        String resmarker_microhaplotype_table = read_string("~{basename(microhaps)}.file_path")
+        String all_mutations_table = read_string("~{basename(new_mutations)}.file_path")
+        String amplicon_info = read_string("~{basename(amplicon_info_ch)}.file_path")
+        String reference = read_string("~{basename(reference_fasta)}.file_path")
+        String resmarker_info = read_string("~{basename(resmarkers_file)}.file_path")
     }
 
     runtime {

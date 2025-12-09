@@ -41,29 +41,26 @@ workflow MAD4HatTeR {
         File? principal_resmarkers
         File? resmarkers_info_tsv
         File pool_options_json = "/opt/mad4hatter/conf/terra_panel.json" # Optional custom pool options JSON file. Needs to be on docker image.
-        String output_cloud_directory
+        String output_directory
         Int dada2_additional_memory = 0
         String? dada2_runtime_size
         # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
     }
 
-    # Use sub() with a regular expression to check for the prefix.
-    # This pattern matches the entire string if it starts with "gs://".
-    # If the pattern is found, a non-empty string is returned.
-    # If the pattern is not found, the original string is returned.
-    String matches_prefix = sub(output_cloud_directory, "^gs://.*", "MATCH")
+    # Use sub() with a regular expression to check for valid characters in output_directory
+    String matches = sub(output_directory, "^[A-Za-z0-9_-]+$", "MATCH")
 
     # Use a boolean variable to convert the string result to a boolean.
     # "MATCH" will be true, while any other string will be false.
-    Boolean starts_with_gs = matches_prefix == "MATCH"
+    Boolean valid_subdirectory = matches == "MATCH"
 
     # Use a conditional call to execute the ErrorWithMessage task
     # if the condition is false.
-    if (!starts_with_gs) {
+    if (!valid_subdirectory) {
         call ErrorWithMessage.error_with_message as output_dir_check {
             input:
-                message = "ERROR: The output_cloud_directory directory does not start with 'gs://'."
+                message = "ERROR: The output_directory can only contain alphanumeric, dashes and underscores."
         }
     }
 
@@ -188,7 +185,7 @@ workflow MAD4HatTeR {
 
     call MoveOutputs.move_outputs {
         input:
-            output_cloud_directory = output_cloud_directory,
+            output_directory = output_directory,
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
             final_allele_table = build_alleletable.alleledata,
             sample_coverage = quality_control.sample_coverage,

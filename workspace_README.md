@@ -1,4 +1,4 @@
-# MAD4HATTER ![Mad4hatter logo](https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg)
+# MAD4HATTER <img src="https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg" alt="Mad4hatter logo" height="80"> 
 
 Welcome to the Mad4hatter workspace! 
 

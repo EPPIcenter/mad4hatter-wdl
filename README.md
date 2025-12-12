@@ -1,6 +1,6 @@
 # MAD4HATTER <img src="https://github.com/EPPIcenter/mad4hatter/blob/gh-pages/logo.svg" alt="Mad4hatter logo" height="80"> 
 
-**Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina amplicon sequencing data. It processes raw FASTQ files and produces an allele table, core QC metrics, and drug-resistance information. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration.
+**Mad4hatter** is a bioinformatics pipeline designed to analyse *Plasmodium* Illumina amplicon sequencing data. It processes raw FASTQ files and produces an allele table, core QC metrics, and drug-resistance information. It was originally developed for the [MAD4HatTeR panel](https://doi.org/10.1038/s41598-025-94716-5) but has since been adapted to support additional panels. While the pipeline can be run on any panel, it was optimised using MAD4HatTeR data; panels with substantially different properties, such as very short amplicon targets, may require additional tuning to achieve optimal performance. Several commonly used panels are preconfigured for convenience, and new panels can be easily added through simple configuration (see below). If you are using a pre-configured panel, simply provide your FASTQ files and the panel name, and you’re ready to run!
 
 The pipeline was first implemented in Nextflow, and the original version can be found in the [mad4hatter GitHub repository](https://github.com/EPPIcenter/mad4hatter). This repository provides a functionally equivalent implementation in WDL, enabling the pipeline to be executed on [Terra](https://terra.bio/). If you are not planning to run the workflow in Terra, we recommend using the original Nextflow pipeline.
 
@@ -127,7 +127,7 @@ Although we can't provide exact cost estimates for your specific dataset, the ta
 | MAD4HatTeR (243 targets) | 506     | 13 hours 2 minutes  | $7.02      | $0.01         |
 | MAD4HatTeR (243 targets) | 862     | 25 hours 13 minutes | $24.02     | $0.03         |
 
-## Pre-configured Panels
+## Panel Information
 
 The pipeline supports several pre-configured panels. Specify your panel using the `pools` parameter when running the workflow.
 
@@ -142,10 +142,17 @@ The pipeline supports several pre-configured panels. Specify your panel using th
 - `4cast`
 - `ama1`
 
-**Custom panels:** If your panel isn't listed, you can provide your own panel configuration files. Use the `amplicon_info_files` parameter along with either `genome` (whole genome reference) or `refseq_fasta` (targeted reference). See [example panel configurations](https://github.com/EPPIcenter/mad4hatter/tree/develop/panel_information) for reference.
+**Custom panels:** 
+
+If your panel isn't listed, you can provide your own panel configuration files. Use the `amplicon_info_files` parameter to set the path(s) to the files defining the targets in your panel. Supply a reference with one the following parameters:
+* `genome` (whole genome reference) 
+* `refseq_fasta` (targeted reference)
+* `targeted_reference_files` (a list of multiple targeted reference files)
+
+See [example panel configurations](https://github.com/EPPIcenter/mad4hatter/tree/develop/panel_information) for reference.
 
 ## Contact info
-If you have questions about the pipeline please reach out to kathryn.murie@ucsf.edu.  
+If you have questions about the pipeline please reach out to kathryn.murie@ucsf.edu
 If you have questions about Terra please reach out to publichealthgenomics@broadinstitute.org
 
 ## Citation 

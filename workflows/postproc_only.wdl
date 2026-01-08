@@ -37,7 +37,7 @@ workflow postproc_only {
     call build_alleletable.build_alleletable {
         input:
             amplicon_info_ch = amplicon_info_ch,
-            denoised_asvs = clusters,
+            denoised_asvs = denoise_amplicons_2.dada2_clusters,
             processed_asvs = denoise_amplicons_2.results_ch,
             docker_image = docker_image
     }

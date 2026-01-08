@@ -76,6 +76,7 @@ workflow denoise_amplicons_2 {
     }
 
     output {
+        File denoise_ch = denoise_input
         File results_ch = build_pseudocigar.pseudocigar
         File reference_ch = reference
         File aligned_asv_table = alignment_table

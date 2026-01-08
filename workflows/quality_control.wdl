@@ -14,7 +14,7 @@ workflow quality_control {
         String docker_image
     }
 
-    # Initial Preprocessing
+    # Put all sample and amplicon coverage files into a single file with sample name column
     call preprocess_coverage.preprocess_coverage {
         input:
             sample_coverages = sample_coverage_files,
@@ -22,7 +22,7 @@ workflow quality_control {
             docker_image = docker_image
     }
 
-    # If postprocessing coverage is provided, run the postprocessing workflow
+    # If postprocessing coverage is provided add dada2 and postprocessing coverage to the coverage files
     if (defined(alleledata) && defined(clusters)) {
         File defined_alleledata = select_first([alleledata])
         File defined_clusters = select_first([clusters])

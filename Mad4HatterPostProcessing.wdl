@@ -1,6 +1,6 @@
 version 1.0
 
-import "workflows/process_inputs.wdl" as ProcessInputs
+import "workflows/generate_amplicon_info.wdl" as GenerateAmpliconInfo
 import "workflows/postproc_only.wdl" as PostProc
 import "modules/local/get_amplicon_and_targeted_ref_from_config.wdl" as GetAmpliconAndTargetedRefFromConfig
 import "modules/local/error_with_message.wdl" as ErrorWithMessage
@@ -47,7 +47,7 @@ workflow Mad4HatterPostProcessing {
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
     Array[File]? targeted_reference_files_final = select_first([targeted_reference_files, get_amplicon_and_targeted_ref_from_config.targeted_reference_files])
 
-    call ProcessInputs.generate_amplicon_info {
+    call GenerateAmpliconInfo.generate_amplicon_info {
         input:
             pools = pools,
             docker_image = docker_image,

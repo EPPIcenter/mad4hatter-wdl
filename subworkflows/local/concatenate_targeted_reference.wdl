@@ -1,6 +1,6 @@
 version 1.0
 
-import "../modules/local/build_resources.wdl" as build_resources
+import "../../modules/local/build_resources.wdl" as build_resources
 
 workflow concatenate_targeted_reference {
     input {

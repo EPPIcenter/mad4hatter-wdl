@@ -2,8 +2,7 @@ version 1.0
 
 # This workflow allows users to optionally create a reference from genomes or use a default
 import "../../modules/local/create_reference_from_genomes.wdl" as create_reference_from_genomes
-import "../../workflows/process_inputs.wdl" as process_inputs
-import "../../workflows/concatenate_targeted_reference.wdl" as concatenate_targeted_reference
+import "../../subworkflows/local/concatenate_targeted_reference.wdl" as concatenate_targeted_reference
 import "../../modules/local/error_with_message.wdl" as error_with_message
 
 workflow prepare_reference_sequences {

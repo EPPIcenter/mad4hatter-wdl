@@ -1,6 +1,6 @@
 version 1.0
 
-import "workflows/process_inputs.wdl" as ProcessInputs
+import "workflows/generate_amplicon_info.wdl" as GenerateAmpliconInfo
 import "workflows/qc_only.wdl" as QcOnly
 import "modules/local/get_amplicon_and_targeted_ref_from_config.wdl" as GetAmpliconAndTargetedRefFromConfig
 
@@ -32,7 +32,7 @@ workflow Mad4HatterQcOnly {
     # Determine final amplicon info files to use. If provided, use those; otherwise, use from config.
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
 
-    call ProcessInputs.generate_amplicon_info {
+    call GenerateAmpliconInfo.generate_amplicon_info {
         input:
             pools = pools,
             docker_image = docker_image,

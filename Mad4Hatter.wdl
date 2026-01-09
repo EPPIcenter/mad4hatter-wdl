@@ -5,7 +5,7 @@ import "workflows/denoise_amplicons_1.wdl" as DenoiseAmplicons1Wf
 import "workflows/denoise_amplicons_2.wdl" as DenoiseAmplicons2Wf
 import "workflows/resistance_marker_module.wdl" as ResistanceMarkerModuleWf
 import "workflows/quality_control.wdl" as QualityControlWf
-import "workflows/process_inputs.wdl" as ProcessInputsWf
+import "workflows/generate_amplicon_info.wdl" as GenerateAmpliconInfoWf
 import "modules/local/build_alleletable.wdl" as BuildAlleletable
 import "modules/local/move_outputs.wdl" as MoveOutputs
 import "modules/local/get_amplicon_and_targeted_ref_from_config.wdl" as GetAmpliconAndTargetedRefFromConfig
@@ -96,7 +96,7 @@ workflow MAD4HatTeR {
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
 
     # Generate final amplicon info
-    call ProcessInputsWf.generate_amplicon_info {
+    call GenerateAmpliconInfoWf.generate_amplicon_info {
         input:
             pools = pools,
             docker_image = docker_image,

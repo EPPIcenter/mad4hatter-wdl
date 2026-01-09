@@ -153,7 +153,7 @@ workflow MAD4HatTeR {
     call BuildAlleletable.build_alleletable {
         input:
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
-            denoised_asvs = denoise_amplicons_1.dada2_clusters,
+            denoised_asvs = denoise_amplicons_2.denoise_ch,
             processed_asvs = denoise_amplicons_2.results_ch,
             docker_image = docker_image
     }

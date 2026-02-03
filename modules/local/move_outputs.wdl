@@ -3,6 +3,7 @@ version 1.0
 task move_outputs {
     input {
         File final_allele_table
+        File final_allele_table_collapsed
         File sample_coverage
         File amplicon_coverage
         File dada2_clusters
@@ -45,6 +46,7 @@ task move_outputs {
 
         # Copy individual files
         copy_file "~{final_allele_table}" ""
+        copy_file "~{final_allele_table_collapsed}"
         copy_file "~{sample_coverage}" ""
         copy_file "~{amplicon_coverage}" ""
         copy_file "~{dada2_clusters}" "raw_dada2_output"
@@ -59,6 +61,7 @@ task move_outputs {
 
     output {
         String allele_data = read_string("~{basename(final_allele_table)}.file_path")
+        String allele_table_collapsed = read_string("~{basename(final_allele_table_collapsed)}.file_path")
         String sample_coverage = read_string("~{basename(sample_coverage)}.file_path")
         String amplicon_coverage = read_string("~{basename(amplicon_coverage)}.file_path")
         String dada2_clusters = read_string("~{basename(dada2_clusters)}.file_path")

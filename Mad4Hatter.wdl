@@ -203,6 +203,7 @@ workflow MAD4HatTeR {
 
     output {
         String allele_data = move_outputs.allele_data
+        String allele_table_collapsed = move_outputs.allele_table_collapsed
         String sample_coverage = move_outputs.sample_coverage
         String amplicon_coverage = move_outputs.amplicon_coverage
         String dada2_clusters = move_outputs.dada2_clusters

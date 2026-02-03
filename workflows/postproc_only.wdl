@@ -38,7 +38,9 @@ workflow postproc_only {
         input:
             amplicon_info_ch = amplicon_info_ch,
             denoised_asvs = denoise_amplicons_2.denoise_ch,
-            processed_asvs = denoise_amplicons_2.results_ch,
+            masked_pseudocigar_table = denoise_amplicons_2.masked_pseudocigar,
+            unmasked_pseudocigar_table = denoise_amplicons_2.unmasked_pseudocigar,
+            masked_asv_table = denoise_amplicons_2.alignment_table,
             docker_image = docker_image
     }
 
@@ -46,5 +48,6 @@ workflow postproc_only {
         File reference_ch = denoise_amplicons_2.reference_ch
         File aligned_asv_table = denoise_amplicons_2.aligned_asv_table
         File alleledata = build_alleletable.alleledata
+        File alleledata_collapsed = build_alleletable.alleledata_collapsed
     }
 }

@@ -80,7 +80,7 @@ workflow denoise_amplicons_2 {
     call build_pseudocigar.build_pseudocigar as build_masked_pseudo_cigar {
         input:
             alignments = alignment_table,
-            output_suffix = ".masked"
+            output_suffix = ".masked",
             docker_image = docker_image
     }
 

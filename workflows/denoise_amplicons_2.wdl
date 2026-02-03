@@ -59,7 +59,7 @@ workflow denoise_amplicons_2 {
     call build_pseudocigar.build_pseudocigar {
         input:
             alignments = align_to_reference_and_filter_asvs.filtered_alignments_ch,
-            output_suffix = ".unmasked"
+            output_suffix = ".unmasked",
             docker_image = docker_image
     }
 

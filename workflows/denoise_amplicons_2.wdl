@@ -55,6 +55,14 @@ workflow denoise_amplicons_2 {
             docker_image = docker_image
     }
 
+    # Build the unmasked pseudocigar
+    call build_pseudocigar.build_pseudocigar {
+        input:
+            alignments = align_to_reference_and_filter_asvs.filtered_alignments_ch,
+            output_suffix = ".unmasked"
+            docker_image = docker_image
+    }
+
     # Mask low complexity regions if needed
     if (!defined(masked_fasta) && (mask_tandem_repeats || mask_homopolymers)) {
         call mask_low_complexity_regions.mask_low_complexity_regions {
@@ -69,15 +77,17 @@ workflow denoise_amplicons_2 {
     File alignment_table = select_first([mask_low_complexity_regions.masked_alignments, align_to_reference_and_filter_asvs.alignments])
 
     # Build pseudocigar
-    call build_pseudocigar.build_pseudocigar {
+    call build_pseudocigar.build_pseudocigar as build_masked_pseudo_cigar {
         input:
             alignments = alignment_table,
+            output_suffix = ".masked"
             docker_image = docker_image
     }
 
     output {
         File denoise_ch = denoise_input
-        File results_ch = build_pseudocigar.pseudocigar
+        File unmasked_pseudocigar = build_pseudocigar.pseudocigar
+        File masked_pseudocigar = build_masked_pseudo_cigar.pseudocigar
         File reference_ch = reference
         File aligned_asv_table = alignment_table
     }

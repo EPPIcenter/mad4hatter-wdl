@@ -72,6 +72,11 @@ task get_amplicon_and_targeted_ref_from_config {
     output {
         Array[File] amplicon_info_files = read_lines("amplicon.fofn")
         Array[File] targeted_reference_files = read_lines("targeted_reference.fofn")
+        # Below are not used in future steps, but we glob them here to ensure they are
+        # saved and available in future steps when referenced from the two above sorted lists of files.
+        # This is because WDL needs to see the files in the output section to know to save them.
+        Array[File] not_used_amplicon_info_files = glob("amplicon_info_files/*")
+        Array[File] not_used_targeted_reference_files = glob("targeted_reference_files/*")
     }
 
     runtime {

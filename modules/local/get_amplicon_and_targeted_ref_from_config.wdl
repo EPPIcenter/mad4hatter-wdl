@@ -19,7 +19,9 @@ task get_amplicon_and_targeted_ref_from_config {
         import shutil
         import os
 
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            format="%(levelname)s: %(asctime)s : %(message)s", level=logging.INFO
+        )
 
         logging.info("Loading pool configuration from JSON")
         with open("~{pool_options_json}") as f:
@@ -42,10 +44,22 @@ task get_amplicon_and_targeted_ref_from_config {
         logging.info("Copying amplicon info and targeted reference files to output directories")
         os.makedirs("amplicon_info_files", exist_ok=True)
         os.makedirs("targeted_reference_files", exist_ok=True)
-        for amplicon_file in amplicon_info_paths:
-            shutil.copy2(amplicon_file, "amplicon_info_files/")
-        for reference_file in targeted_reference_paths:
-            shutil.copy2(reference_file, "targeted_reference_files/")
+
+        # Copy files with index-based naming to preserve order
+        # Format: {index:03d}_{original_basename}
+        for idx, amplicon_file in enumerate(amplicon_info_paths):
+            original_basename = os.path.basename(amplicon_file)
+            output_name = f"{idx:03d}_{original_basename}"
+            output_path = os.path.join("amplicon_info_files", output_name)
+            shutil.copy2(amplicon_file, output_path)
+            logging.info(f"Copied amplicon file to: {output_path}")
+
+        for idx, reference_file in enumerate(targeted_reference_paths):
+            original_basename = os.path.basename(reference_file)
+            output_name = f"{idx:03d}_{original_basename}"
+            output_path = os.path.join("targeted_reference_files", output_name)
+            shutil.copy2(reference_file, output_path)
+            logging.info(f"Copied reference file to: {output_path}")
         CODE
     >>>
 

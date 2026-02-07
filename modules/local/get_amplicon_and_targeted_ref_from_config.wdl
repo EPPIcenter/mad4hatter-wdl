@@ -83,6 +83,8 @@ task get_amplicon_and_targeted_ref_from_config {
         with open("updated_pool_names.txt", "w") as f:
             for pool_name in updated_pool_names:
                 f.write(pool_name + "\n")
+        CODE
+    >>>
 
     output {
         Array[File] amplicon_info_files = glob("amplicon_info_files/*")

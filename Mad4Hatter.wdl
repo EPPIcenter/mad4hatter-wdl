@@ -21,7 +21,6 @@ import "modules/local/error_with_message.wdl" as ErrorWithMessage
 workflow MAD4HatTeR {
     input {
         Array[String] pools
-        String sequencer # The sequencer used to produce your data
         Array[File] forward_fastqs # List of forward fastqs. Must be in correct order.
         Array[File] reverse_fastqs # List of reverse fastqs. Must be in correct order.
         Array[File]? amplicon_info_files
@@ -33,6 +32,8 @@ workflow MAD4HatTeR {
         Int band_size = 16 # Limit on the net cumulative number of insertions of one sequence relative to the other in DADA2
         Int max_ee = 3 # Limit on number of expected errors within a read during filtering and trimming within DADA2
         Int cutadapt_minlen = 100
+        gtrim = false
+        quality_score = 20
         Int allowed_errors = 0
         Boolean just_concatenate = true
         Boolean mask_tandem_repeats = true
@@ -110,8 +111,9 @@ workflow MAD4HatTeR {
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
             forward_fastqs = forward_fastqs,
             reverse_fastqs = reverse_fastqs,
-            sequencer = sequencer,
             cutadapt_minlen = cutadapt_minlen,
+            gtrim = gtrim,
+            quality_score = quality_score,
             allowed_errors = allowed_errors,
             docker_image = docker_image
     }

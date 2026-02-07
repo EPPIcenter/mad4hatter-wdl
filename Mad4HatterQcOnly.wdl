@@ -10,8 +10,9 @@ workflow Mad4HatterQcOnly {
         Array[File]? amplicon_info_files
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
-        String sequencer
         Int cutadapt_minlen = 100
+        gtrim = false,
+        quality_score = 20,
         Int allowed_errors = 0
         # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
@@ -44,8 +45,9 @@ workflow Mad4HatterQcOnly {
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
             forward_fastqs = forward_fastqs,
             reverse_fastqs = reverse_fastqs,
-            sequencer = sequencer,
             cutadapt_minlen = cutadapt_minlen,
+            gtrim = gtrim,
+            quality_score = quality_score,
             allowed_errors = allowed_errors,
             docker_image = docker_image
     }

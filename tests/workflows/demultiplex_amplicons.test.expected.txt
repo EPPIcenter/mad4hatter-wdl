@@ -1,0 +1,4 @@
+# Expected outputs with MD5 checksums
+demultiplex_amplicons.sample_summary_ch=acb88b54c867d608bed674e48f4aeced
+demultiplex_amplicons.amplicon_summary_ch=d030d0fa1e4ffb18b0190eed180ad20b
+

@@ -1,0 +1,15 @@
+{
+  "quality_control.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "quality_control.sample_coverage_files": [
+    "tests/example_data/N3D7100Kb_S103.SAMPLEsummary.txt",
+    "tests/example_data/N3D710ka_S56.SAMPLEsummary.txt",
+    "tests/example_data/SRR26819135_S1_L001.SAMPLEsummary.txt"
+  ],
+  "quality_control.amplicon_coverage_files": [
+    "tests/example_data/N3D7100Kb_S103.AMPLICONsummary.txt",
+    "tests/example_data/N3D710ka_S56.AMPLICONsummary.txt",
+    "tests/example_data/SRR26819135_S1_L001.AMPLICONsummary.txt"
+  ],
+  "quality_control.docker_image": "eppicenter/mad4hatter:develop"
+}
+

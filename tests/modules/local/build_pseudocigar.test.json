@@ -1,0 +1,6 @@
+{
+  "build_pseudocigar.alignments": "tests/example_data/small_alignments_with_SNPs.alignments.txt",
+  "build_pseudocigar.output_suffix": ".snps",
+  "build_pseudocigar.cpus": 1,
+  "build_pseudocigar.docker_image": "eppicenter/mad4hatter:develop"
+}

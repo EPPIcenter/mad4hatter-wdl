@@ -1,0 +1,7 @@
+{
+  "build_pseudocigar.alignments": "tests/example_data/small_alignments_masked_with_indels.alignments.txt",
+  "build_pseudocigar.output_suffix": ".indels",
+  "build_pseudocigar.cpus": 1,
+  "build_pseudocigar.docker_image": "eppicenter/mad4hatter:develop"
+}
+

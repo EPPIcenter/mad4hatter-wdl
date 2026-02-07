@@ -1,0 +1,14 @@
+{
+  "demultiplex_amplicons.amplicon_info_ch": "tests/example_data/cutadapt_examples/dummy_amplicon_info.tsv",
+  "demultiplex_amplicons.forward_fastqs": [
+    "tests/example_data/cutadapt_examples/sample1_R1.fastq.gz"
+  ],
+  "demultiplex_amplicons.reverse_fastqs": [
+    "tests/example_data/cutadapt_examples/sample1_R2.fastq.gz"
+  ],
+  "demultiplex_amplicons.sequencer": "miseq",
+  "demultiplex_amplicons.cutadapt_minlen": 5,
+  "demultiplex_amplicons.allowed_errors": 0,
+  "demultiplex_amplicons.docker_image": "eppicenter/mad4hatter:develop"
+}
+

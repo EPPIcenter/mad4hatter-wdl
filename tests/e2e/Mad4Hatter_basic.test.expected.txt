@@ -1,0 +1,3 @@
+# E2E test - just check for success
+# No specific output checks - workflow completion is the test
+

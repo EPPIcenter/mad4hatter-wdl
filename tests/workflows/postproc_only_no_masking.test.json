@@ -1,0 +1,10 @@
+{
+  "postproc_only.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "postproc_only.clusters": "tests/example_data/subset_dada2.clusters.txt",
+  "postproc_only.just_concatenate": true,
+  "postproc_only.mask_tandem_repeats": false,
+  "postproc_only.mask_homopolymers": false,
+  "postproc_only.refseq_fasta": "tests/example_data/multi_pool_targeted_reference.fasta",
+  "postproc_only.docker_image": "eppicenter/mad4hatter:develop"
+}
+

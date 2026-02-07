@@ -1,0 +1,5 @@
+{
+  "create_primer_files.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "create_primer_files.docker_image": "eppicenter/mad4hatter:develop"
+}
+

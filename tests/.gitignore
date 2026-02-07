@@ -1,0 +1,9 @@
+# Test results
+test_results/
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+

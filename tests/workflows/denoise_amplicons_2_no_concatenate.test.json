@@ -1,0 +1,10 @@
+{
+  "denoise_amplicons_2.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "denoise_amplicons_2.clusters": "tests/example_data/subset_dada2.clusters.txt",
+  "denoise_amplicons_2.just_concatenate": false,
+  "denoise_amplicons_2.refseq_fasta": "tests/example_data/multi_pool_targeted_reference.fasta",
+  "denoise_amplicons_2.mask_tandem_repeats": true,
+  "denoise_amplicons_2.mask_homopolymers": true,
+  "denoise_amplicons_2.docker_image": "eppicenter/mad4hatter:develop"
+}
+

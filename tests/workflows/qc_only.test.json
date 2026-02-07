@@ -1,0 +1,16 @@
+{
+  "qc_only.amplicon_info_ch": "tests/example_data/cutadapt_examples/dummy_amplicon_info.tsv",
+  "qc_only.forward_fastqs": [
+    "tests/example_data/cutadapt_examples/sample1_R1.fastq.gz",
+    "tests/example_data/cutadapt_examples/sample2_R1.fastq.gz"
+  ],
+  "qc_only.reverse_fastqs": [
+    "tests/example_data/cutadapt_examples/sample1_R2.fastq.gz",
+    "tests/example_data/cutadapt_examples/sample2_R2.fastq.gz"
+  ],
+  "qc_only.sequencer": "miseq",
+  "qc_only.cutadapt_minlen": 5,
+  "qc_only.allowed_errors": 0,
+  "qc_only.docker_image": "eppicenter/mad4hatter:develop"
+}
+

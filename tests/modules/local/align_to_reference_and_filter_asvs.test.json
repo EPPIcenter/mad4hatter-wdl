@@ -1,0 +1,8 @@
+{
+  "align_to_reference_and_filter_asvs.clusters": "tests/example_data/clusters.concatenated.collapsed.txt",
+  "align_to_reference_and_filter_asvs.refseq_fasta": "tests/example_data/multi_pool_targeted_reference.fasta",
+  "align_to_reference_and_filter_asvs.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "align_to_reference_and_filter_asvs.cpus": 1,
+  "align_to_reference_and_filter_asvs.docker_image": "eppicenter/mad4hatter:develop"
+}
+

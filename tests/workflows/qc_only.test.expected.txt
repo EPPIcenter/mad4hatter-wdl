@@ -1,0 +1,5 @@
+# Expected outputs with MD5 checksums
+# Note: miniwdl outputs use task names, not workflow output aliases
+quality_control.sample_coverage=04fab933ca064bc2e486d722ed6c145b
+quality_control.amplicon_coverage=fd3612f8982a6b7b1c9d82a61598ab42
+

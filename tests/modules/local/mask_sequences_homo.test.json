@@ -1,0 +1,7 @@
+{
+  "mask_sequences.masks": ["tests/example_data/dummy_targeted_ref_masked_homo.fasta"],
+  "mask_sequences.alignments": "tests/example_data/dummy_alignments.txt",
+  "mask_sequences.cpus": 1,
+  "mask_sequences.docker_image": "eppicenter/mad4hatter:develop"
+}
+

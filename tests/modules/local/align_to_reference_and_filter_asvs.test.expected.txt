@@ -1,0 +1,3 @@
+# Expected outputs with MD5 checksums
+align_to_reference_and_filter_asvs.alignments=f711260d651906c94fe27ffd4bce7127
+align_to_reference_and_filter_asvs.filtered_alignments_ch=f711260d651906c94fe27ffd4bce7127

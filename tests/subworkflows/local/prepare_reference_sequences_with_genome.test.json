@@ -1,0 +1,6 @@
+{
+  "prepare_reference_sequences.amplicon_info_ch": "tests/example_data/chrom_one_info.tsv",
+  "prepare_reference_sequences.genome": "tests/example_data/chrom_one_genome.fasta",
+  "prepare_reference_sequences.docker_image": "eppicenter/mad4hatter:develop"
+}
+

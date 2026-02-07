@@ -1,0 +1,10 @@
+{
+  "build_resmarker_info_and_resistance_table.alleledata": "tests/example_data/allele_data.txt",
+  "build_resmarker_info_and_resistance_table.alignment_data": "tests/example_data/alignments.pseudocigar.txt",
+  "build_resmarker_info_and_resistance_table.refseq": "tests/example_data/test_resmarker_reference.fasta",
+  "build_resmarker_info_and_resistance_table.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "build_resmarker_info_and_resistance_table.resmarkers_info_tsv": "tests/example_data/test_resmarker_info.txt",
+  "build_resmarker_info_and_resistance_table.cpus": 1,
+  "build_resmarker_info_and_resistance_table.docker_image": "eppicenter/mad4hatter:develop"
+}
+

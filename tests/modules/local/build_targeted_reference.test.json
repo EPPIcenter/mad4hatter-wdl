@@ -1,0 +1,9 @@
+{
+  "build_targeted_reference.reference_input_paths": [
+    "tests/example_data/chrom_one_targeted_ref.fasta",
+    "tests/example_data/chrom_two_targeted_ref.fasta"
+  ],
+  "build_targeted_reference.reference_output_path": "merged_reference.fasta",
+  "build_targeted_reference.docker_image": "eppicenter/mad4hatter:develop"
+}
+

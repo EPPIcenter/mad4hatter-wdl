@@ -1,0 +1,3 @@
+# Expected outputs with MD5 checksums
+mask_sequences.masked_alignments=82aa2f65bf345bd64c1acdf7b6edae2e
+

@@ -1,0 +1,10 @@
+{
+  "prepare_reference_sequences.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "prepare_reference_sequences.targeted_reference_files": [
+    "tests/example_data/D1.1_reference.fasta",
+    "tests/example_data/R1.2_reference.fasta",
+    "tests/example_data/R2.1_reference.fasta"
+  ],
+  "prepare_reference_sequences.docker_image": "eppicenter/mad4hatter:develop"
+}
+

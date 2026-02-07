@@ -1,0 +1,14 @@
+{
+  "preprocess_coverage.sample_coverages": [
+    "tests/example_data/N3D7100Kb_S103.SAMPLEsummary.txt",
+    "tests/example_data/N3D710ka_S56.SAMPLEsummary.txt",
+    "tests/example_data/SRR26819135_S1_L001.SAMPLEsummary.txt"
+  ],
+  "preprocess_coverage.amplicon_coverages": [
+    "tests/example_data/N3D7100Kb_S103.AMPLICONsummary.txt",
+    "tests/example_data/N3D710ka_S56.AMPLICONsummary.txt",
+    "tests/example_data/SRR26819135_S1_L001.AMPLICONsummary.txt"
+  ],
+  "preprocess_coverage.docker_image": "eppicenter/mad4hatter:develop"
+}
+

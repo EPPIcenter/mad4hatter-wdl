@@ -1,0 +1,4 @@
+# Expected outputs with MD5 checksums
+quality_control.sample_coverage=11733857dc8d75fbc0debe1168560fae
+quality_control.amplicon_coverage=637da14a5ec87115737cc5a6eb064f29
+

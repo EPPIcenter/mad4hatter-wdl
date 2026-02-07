@@ -1,0 +1,6 @@
+{
+  "Mad4HatterPostProcessing.pools": ["D1.1", "R1.2", "R2.1"],
+  "Mad4HatterPostProcessing.clusters": "tests/example_data/subset_dada2.clusters.txt",
+  "Mad4HatterPostProcessing.docker_image": "eppicenter/mad4hatter:develop"
+}
+

@@ -1,0 +1,11 @@
+{
+  "mask_low_complexity_regions.reference": "tests/example_data/dummy_targeted_ref.fasta",
+  "mask_low_complexity_regions.mask_tandem_repeats": false,
+  "mask_low_complexity_regions.trf_min_score": 25,
+  "mask_low_complexity_regions.trf_max_period": 3,
+  "mask_low_complexity_regions.mask_homopolymers": true,
+  "mask_low_complexity_regions.homopolymer_threshold": 4,
+  "mask_low_complexity_regions.alignments": "tests/example_data/dummy_alignments.txt",
+  "mask_low_complexity_regions.docker_image": "eppicenter/mad4hatter:develop"
+}
+

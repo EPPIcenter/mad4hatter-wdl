@@ -1,0 +1,5 @@
+{
+  "collapse_concatenated_reads.clusters": "tests/example_data/dada2.clusters.txt",
+  "collapse_concatenated_reads.docker_image": "eppicenter/mad4hatter:develop"
+}
+

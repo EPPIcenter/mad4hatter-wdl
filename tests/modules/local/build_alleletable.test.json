@@ -1,0 +1,9 @@
+{
+  "build_alleletable.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "build_alleletable.denoised_asvs": "tests/example_data/dada2.clusters.txt",
+  "build_alleletable.masked_pseudocigar_table": "tests/example_data/alignments.pseudocigar.txt",
+  "build_alleletable.unmasked_pseudocigar_table": "tests/example_data/alignments.pseudocigar.unmasked.txt",
+  "build_alleletable.masked_asv_table": "tests/example_data/masked.alignments.txt",
+  "build_alleletable.docker_image": "eppicenter/mad4hatter:develop"
+}
+

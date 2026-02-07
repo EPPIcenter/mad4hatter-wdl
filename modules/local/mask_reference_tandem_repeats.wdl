@@ -11,8 +11,9 @@ task mask_reference_tandem_repeats {
     command <<<
         set -euo pipefail
 
-        # Name the input file to a standard name so outputs are predictable
-        mv ~{refseq_fasta} reference.fasta
+        # Copy the input file to a standard name so outputs are predictable
+        # (can't move because input files are read-only in Docker)
+        cp ~{refseq_fasta} reference.fasta
         trf reference.fasta 2 7 7 80 10 ~{min_score} ~{max_period} -h -m
     >>>
 

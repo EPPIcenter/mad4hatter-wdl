@@ -1,0 +1,9 @@
+{
+  "resistance_marker_module.allele_data": "tests/example_data/test_resmarker_allele_data.txt",
+  "resistance_marker_module.alignment_data": "tests/example_data/test_resmarker_alignments.txt",
+  "resistance_marker_module.reference": "tests/example_data/test_resmarker_reference.fasta",
+  "resistance_marker_module.amplicon_info_ch": "tests/example_data/multi_pool_amplicon_info.tsv",
+  "resistance_marker_module.resmarkers_info_tsv": "tests/example_data/test_resmarker_info.txt",
+  "resistance_marker_module.docker_image": "eppicenter/mad4hatter:develop"
+}
+

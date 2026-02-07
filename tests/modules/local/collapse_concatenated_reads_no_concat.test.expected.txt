@@ -1,0 +1,3 @@
+# Expected outputs with MD5 checksums
+collapse_concatenated_reads.clusters_concatenated_collapsed=69bfb3498c0b1d71601339ae387e8752
+

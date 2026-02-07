@@ -1,0 +1,8 @@
+{
+  "postprocess_coverage.alleledata": "tests/example_data/allele_data.txt",
+  "postprocess_coverage.clusters": "tests/example_data/dada2.clusters.txt",
+  "postprocess_coverage.sample_coverage": "tests/example_data/sample_coverage.txt",
+  "postprocess_coverage.amplicon_coverage": "tests/example_data/amplicon_coverage.txt",
+  "postprocess_coverage.docker_image": "eppicenter/mad4hatter:develop"
+}
+

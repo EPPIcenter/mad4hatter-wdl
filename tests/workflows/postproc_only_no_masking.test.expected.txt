@@ -1,0 +1,4 @@
+# Expected outputs with MD5 checksums
+postproc_only.alleledata=428f9d51a8f563f99f298484b89dbd26
+postproc_only.alleledata_collapsed=208a1c3a9ec1ba214ed894fb845a219b
+

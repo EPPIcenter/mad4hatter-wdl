@@ -1,0 +1,5 @@
+# Expected outputs with MD5 checksums
+# Format: output_name=expected_md5
+build_alleletable.alleledata=bd7a59407f8955079a7c81d0ffc9674c
+build_alleletable.alleledata_collapsed=1e1337889117a47e04bb7646fc46b42a
+

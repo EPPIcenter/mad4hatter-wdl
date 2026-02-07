@@ -1,0 +1,12 @@
+{
+  "Mad4HatterQcOnly.pools": ["R2"],
+  "Mad4HatterQcOnly.sequencer": "miseq",
+  "Mad4HatterQcOnly.forward_fastqs": [
+    "tests/example_data/example_fastq/SRR26819135_S1_L001_R1_001.fastq.gz"
+  ],
+  "Mad4HatterQcOnly.reverse_fastqs": [
+    "tests/example_data/example_fastq/SRR26819135_S1_L001_R2_001.fastq.gz"
+  ],
+  "Mad4HatterQcOnly.docker_image": "eppicenter/mad4hatter:develop"
+}
+

@@ -1,0 +1,7 @@
+# Expected outputs with MD5 checksums
+# Note: miniwdl outputs use task names, not workflow output aliases
+build_resmarker_info_and_resistance_table.resmarkers_output=0fe2c45d9e02a987312aff6dc0c93cb2
+build_resmarker_info_and_resistance_table.resmarkers_by_locus=b658e124526dd980d6cddc372c896fcf
+build_resmarker_info_and_resistance_table.microhaps=2721adfedae1d14776875d0b77e4375d
+build_resmarker_info_and_resistance_table.new_mutations=e93ca011b7b77dc8a4fa8f470fa62ff8
+

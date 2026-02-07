@@ -1,0 +1,5 @@
+{
+  "collapse_concatenated_reads.clusters": "tests/example_data/example_input_collapse_concat.tsv",
+  "collapse_concatenated_reads.docker_image": "eppicenter/mad4hatter:develop"
+}
+

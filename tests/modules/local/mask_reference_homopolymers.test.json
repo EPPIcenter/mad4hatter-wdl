@@ -1,0 +1,6 @@
+{
+  "mask_reference_homopolymers.refseq_fasta": "tests/example_data/dummy_targeted_ref.fasta",
+  "mask_reference_homopolymers.homopolymer_threshold": 4,
+  "mask_reference_homopolymers.docker_image": "eppicenter/mad4hatter:develop"
+}
+

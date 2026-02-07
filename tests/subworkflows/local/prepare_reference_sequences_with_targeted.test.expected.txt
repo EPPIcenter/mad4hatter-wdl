@@ -1,0 +1,3 @@
+# Expected outputs with MD5 checksums
+prepare_reference_sequences.reference_fasta=1b9e32ab96d2083941eafea727d83f48
+

@@ -1,0 +1,4 @@
+# Expected outputs with MD5 checksums
+postprocess_coverage.postprocess_sample_coverage=82786763e7b58a0e4507c889ca65182d
+postprocess_coverage.postprocess_amplicon_coverage=2546b1f7834c0227dd2dc1cfaa889c1f
+

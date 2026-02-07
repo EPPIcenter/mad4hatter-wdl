@@ -1,0 +1,3 @@
+# Expected outputs with MD5 checksums
+build_pseudocigar.pseudocigar=01bf80f3df664c4c2fbeb449eedb2b98
+

@@ -46,10 +46,12 @@ workflow Mad4HatterPostProcessing {
     # Determine final amplicon info files to use. If provided, use those; otherwise, use from config.
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
     Array[File]? targeted_reference_files_final = select_first([targeted_reference_files, get_amplicon_and_targeted_ref_from_config.targeted_reference_files])
+    Array[String] final_pools = select_first([get_amplicon_and_targeted_ref_from_config.updated_pool_names, pools])
+
 
     call GenerateAmpliconInfo.generate_amplicon_info {
         input:
-            pools = pools,
+            pools = final_pools,
             docker_image = docker_image,
             amplicon_info_files = amplicon_info_files_final
     }

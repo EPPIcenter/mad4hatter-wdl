@@ -10,7 +10,6 @@ This workflow runs quality control _only_ on the selected samples.
 | **amplicon_info_files** | The TSVs that contain amplicon information.                           | Array[File]   | Yes      | -                             |
 | **forward_fastqs**      | List of forward fastqs. Must be in correct order.                     | Array[File]   | Yes      | -                             |
 | **reverse_fastqs**      | List of reverse fastqs. Must be in correct order.                     | Array[File]   | Yes      | -                             |
-| **sequencer**           | The name of the sequencer that was used to process the samples.       | String        | Yes      | -                             |
 | **cutadapt_minlen**     | The minimum length used for cutadapt. Optional.                       | Int           | No       | 100                           |
 | **allowed_errors**      | The number of errors allowed to be encountered in cutadapt. Optional. | Int           | No       | 0                             |
 | **docker_image**        | Specifies a custom Docker image to use. Optional.                     | String        | No       | eppicenter/mad4hatter:develop |

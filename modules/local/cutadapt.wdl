@@ -7,7 +7,8 @@ task cutadapt {
         File forward_fastq
         File reverse_fastq
         Int cutadapt_minlen
-        String sequencer
+        String gtrim
+        Int quality_score
         Int allowed_errors
         Int cpus = 1
         String docker_image
@@ -22,7 +23,8 @@ task cutadapt {
             -r ~{rev_primers} \
             -f ~{fwd_primers} \
             -m ~{cutadapt_minlen} \
-            -s ~{sequencer} \
+            -g ~{gtrim} \
+            -q ~{quality_score} \
             -e ~{allowed_errors} \
             -c ~{cpus} \
             -o $OUTPUT_DIR

@@ -10,8 +10,9 @@ workflow Mad4HatterQcOnly {
         Array[File]? amplicon_info_files
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
-        String sequencer
         Int cutadapt_minlen = 100
+        Boolean gtrim = false
+        Int quality_score = 20
         Int allowed_errors = 0
         # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"
@@ -31,10 +32,11 @@ workflow Mad4HatterQcOnly {
 
     # Determine final amplicon info files to use. If provided, use those; otherwise, use from config.
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
+    Array[String] final_pools = select_first([get_amplicon_and_targeted_ref_from_config.updated_pool_names, pools])
 
     call GenerateAmpliconInfo.generate_amplicon_info {
         input:
-            pools = pools,
+            pools = final_pools,
             docker_image = docker_image,
             amplicon_info_files = amplicon_info_files_final
     }
@@ -44,8 +46,9 @@ workflow Mad4HatterQcOnly {
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
             forward_fastqs = forward_fastqs,
             reverse_fastqs = reverse_fastqs,
-            sequencer = sequencer,
             cutadapt_minlen = cutadapt_minlen,
+            gtrim = gtrim,
+            quality_score = quality_score,
             allowed_errors = allowed_errors,
             docker_image = docker_image
     }

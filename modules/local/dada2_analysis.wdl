@@ -9,6 +9,7 @@ task dada2_analysis {
         Int band_size
         Float omega_a
         Int max_ee
+        Int max_mismatch
         Boolean just_concatenate
         Int additional_memory
         String? dada2_runtime_size
@@ -86,6 +87,7 @@ task dada2_analysis {
             --band-size ~{band_size} \
             --omega-a ~{omega_a} \
             --maxEE ~{max_ee} \
+            --max-mismatch ~{max_mismatch} \
             --cores ~{n_cores} \
             ~{if just_concatenate then "--concat-non-overlaps" else ""}
         echo "$(timestamp) : DADA2 processing complete."

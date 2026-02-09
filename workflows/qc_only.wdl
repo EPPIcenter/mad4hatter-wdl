@@ -9,8 +9,9 @@ workflow qc_only {
         File amplicon_info_ch
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
-        String sequencer
         Int cutadapt_minlen
+        String gtrim
+        Int quality_score
         Int allowed_errors
         String docker_image
     }
@@ -20,8 +21,9 @@ workflow qc_only {
             amplicon_info_ch = amplicon_info_ch,
             forward_fastqs = forward_fastqs,
             reverse_fastqs = reverse_fastqs,
-            sequencer = sequencer,
             cutadapt_minlen = cutadapt_minlen,
+            gtrim = gtrim,
+            quality_score = quality_score,
             allowed_errors = allowed_errors,
             docker_image = docker_image
     }

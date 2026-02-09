@@ -6,21 +6,22 @@ This workflow runs the entire MAD4HatTeR pipeline, processing amplicon sequencin
 
 | Input Name               | Description                                                                                                                      | Type          | Required | Default                       |
 |--------------------------|----------------------------------------------------------------------------------------------------------------------------------|---------------|----------|-------------------------------|
-| pools                    | List of pool or panel names. Options: MAD4HatTeR ["D1.1","R1.1","R2.1","R1.2","v1","v2"], PfPHAST ["M1.1","M2.1","M1.addon"], Other ["4cast","ama1"] | Array[String] | Yes      | -                             |
-| sequencer                | The sequencer used to produce your data [Options: miseq, nextseq]                                                                                      | String        | Yes      | -                             |
+| pools                    | List of pool or panel names. Options: MAD4HatTeR ["D1.1","R1.1","R2.1","R1.2","v1","v2"], PfPHAST ["M1.1","M2.1","M1.addon"], Other ["4cast","ama1"]   | Array[String] | Yes      | -                             |
 | forward_fastqs           | List of forward FASTQ files. Order must match reverse_fastqs                                                                                           | Array[File]   | Yes      | -                             |
 | reverse_fastqs           | List of reverse FASTQ files. Order must match forward_fastqs                                                                                           | Array[File]   | Yes      | -                             |
-| output_directory         | Folder name for outputs                                                                                                                               | String        | Yes      | -                             |
-| amplicon_info_files      | Amplicon info file(s) to define the panel information. If not provided then the pre-defined panel info for the pools will be used.                      | Array[File]   | No       | -                             |
-| targeted_reference_files | Targeted reference file(s). If not provided then the pre-defined reference sequences for the pools will be used.                                        | Array[File]   | No       | -                             |
-| refseq_fasta             | Path to targeted reference sequences. If not provided then the pre-defined reference sequences for the pools will be used.                | File          | No       | -                             |
-| genome                   | Path to genome file. If not provided then the pre-defined reference sequences for the pools will be used.                                          | File          | No       | -                             |
-| omega_a                  | Level of statistical evidence required for DADA2 to infer a new ASV                                                              | Float         | No       | 0.000...
+| output_directory         | Folder name for outputs                                                                                                                                | String        | Yes      | -                             |
+| amplicon_info_files      | Amplicon info file(s) to define the panel information. If not provided then the pre-defined panel info for the pools will be used.                     | Array[File]   | No       | -                             |
+| targeted_reference_files | Targeted reference file(s). If not provided then the pre-defined reference sequences for the pools will be used.                                       | Array[File]   | No       | -                             |
+| refseq_fasta             | Path to targeted reference sequences. If not provided then the pre-defined reference sequences for the pools will be used.                             | File          | No       | -                             |
+| genome                   | Path to genome file. If not provided then the pre-defined reference sequences for the pools will be used.                                              | File          | No       | -                             |
+| omega_a                  | Level of statistical evidence required for DADA2 to infer a new ASV                                                                                    | Float         | No       | 0.000...
 001                 |
 | dada2_pool               | Pooling method for DADA2 to process ASVs                                                                                         | String        | No       | pseudo                        |
 | band_size                | Limit on net cumulative number of insertions in DADA2                                                                            | Int           | No       | 16                            |
 | max_ee                   | Limit on number of expected errors within a read in DADA2                                                                        | Int           | No       | 3                             |
 | cutadapt_minlen          | Minimum length for cutadapt                                                                                                      | Int           | No       | 100                           |
+| gtrim                    | If true, --nextseq-trim will be used to trim trailing G in cutadapt.  | Bool          | No       | false                         |
+| quality_score            | The quality score threshold to apply in cutadapt.                     | Int           | No       | 20                            |
 | allowed_errors           | Allowed errors for cutadapt                                                                                                      | Int           | No       | 0                             |
 | just_concatenate         | If true, just concatenate reads                                                                                                  | Boolean       | No       | false                         |
 | mask_tandem_repeats      | Mask tandem repeats                                                                                                              | Boolean       | No       | true                          |
@@ -28,8 +29,8 @@ This workflow runs the entire MAD4HatTeR pipeline, processing amplicon sequencin
 | masked_fasta             | Masked FASTA file                                                                                                                | File          | No       | -                             |
 | principal_resmarkers     | Principal resistance markers file                                                                                                | File          | No       | -                             |
 | resmarkers_info_tsv      | Resistance markers info TSV file                                                                                                 | File          | No       | -                             |
-| dada2_additional_memory  | Additional memory (in GB) to be added to the provided memory used in the DADA2 runtime configuration                            | Int           | No       | 0                             |
-| dada2_runtime_size       | DADA2 runtime size [small, medium, large]. Should be based on the size of the input dataset. Will be calculated if not provided | String        | No       | -                             |
+| dada2_additional_memory  | Additional memory (in GB) to be added to the provided memory used in the DADA2 runtime configuration                             | Int           | No       | 0                             |
+| dada2_runtime_size       | DADA2 runtime size [small, medium, large]. Should be based on the size of the input dataset. Will be calculated if not provided  | String        | No       | -                             |
 | docker_image             | The Docker image to use                                                                                                          | String        | No       | eppicenter/mad4hatter:develop |
 
 ## Pipeline Outputs

@@ -10,6 +10,7 @@ workflow denoise_amplicons_1 {
         Int band_size
         Float omega_a
         Int max_ee
+        Int max_mismatch
         Boolean just_concatenate
         Int additional_memory
         String? dada2_runtime_size
@@ -24,6 +25,7 @@ workflow denoise_amplicons_1 {
             band_size = band_size,
             omega_a = omega_a,
             max_ee = max_ee,
+            max_mismatch = max_mismatch,
             just_concatenate = just_concatenate,
             additional_memory = additional_memory,
             dada2_runtime_size = dada2_runtime_size,

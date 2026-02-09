@@ -21,7 +21,6 @@ import "modules/local/error_with_message.wdl" as ErrorWithMessage
 workflow MAD4HatTeR {
     input {
         Array[String] pools
-        String sequencer # The sequencer used to produce your data
         Array[File] forward_fastqs # List of forward fastqs. Must be in correct order.
         Array[File] reverse_fastqs # List of reverse fastqs. Must be in correct order.
         Array[File]? amplicon_info_files
@@ -32,7 +31,10 @@ workflow MAD4HatTeR {
         String dada2_pool = "pseudo" # Pooling method for DADA2 to process ASVs [Options: pseudo (default), true, false]
         Int band_size = 16 # Limit on the net cumulative number of insertions of one sequence relative to the other in DADA2
         Int max_ee = 3 # Limit on number of expected errors within a read during filtering and trimming within DADA2
+        Int max_mismatch = 0 # allow no errors when merging in dada2
         Int cutadapt_minlen = 100
+        Boolean gtrim = false
+        Int quality_score = 20
         Int allowed_errors = 0
         Boolean just_concatenate = true
         Boolean mask_tandem_repeats = true
@@ -94,11 +96,12 @@ workflow MAD4HatTeR {
 
     # Determine final amplicon info files to use. If provided, use those; otherwise, use from config.
     Array[File] amplicon_info_files_final = select_first([amplicon_info_files, get_amplicon_and_targeted_ref_from_config.amplicon_info_files])
+    Array[String] final_pools = select_first([get_amplicon_and_targeted_ref_from_config.updated_pool_names, pools])
 
     # Generate final amplicon info
     call GenerateAmpliconInfoWf.generate_amplicon_info {
         input:
-            pools = pools,
+            pools = final_pools,
             docker_image = docker_image,
             amplicon_info_files = amplicon_info_files_final
     }
@@ -110,8 +113,9 @@ workflow MAD4HatTeR {
             amplicon_info_ch = generate_amplicon_info.amplicon_info_ch,
             forward_fastqs = forward_fastqs,
             reverse_fastqs = reverse_fastqs,
-            sequencer = sequencer,
             cutadapt_minlen = cutadapt_minlen,
+            gtrim = gtrim,
+            quality_score = quality_score,
             allowed_errors = allowed_errors,
             docker_image = docker_image
     }
@@ -126,6 +130,7 @@ workflow MAD4HatTeR {
             band_size = band_size,
             omega_a = omega_a,
             max_ee = max_ee,
+            max_mismatch = max_mismatch,
             just_concatenate = just_concatenate,
             additional_memory = dada2_additional_memory,
             dada2_runtime_size = dada2_runtime_size,

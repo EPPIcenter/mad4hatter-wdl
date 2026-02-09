@@ -8,8 +8,9 @@ workflow demultiplex_amplicons {
         File amplicon_info_ch
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
-        String sequencer
         Int cutadapt_minlen
+        String gtrim
+        Int quality_score
         Int allowed_errors
         String docker_image
     }
@@ -30,7 +31,8 @@ workflow demultiplex_amplicons {
                 forward_fastq = read_pair.left,
                 reverse_fastq = read_pair.right,
                 cutadapt_minlen = cutadapt_minlen,
-                sequencer = sequencer,
+                gtrim = gtrim, 
+                quality_score=quality_score,
                 allowed_errors = allowed_errors,
                 docker_image = docker_image
         }

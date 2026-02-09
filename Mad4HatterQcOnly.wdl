@@ -11,8 +11,8 @@ workflow Mad4HatterQcOnly {
         Array[File] forward_fastqs
         Array[File] reverse_fastqs
         Int cutadapt_minlen = 100
-        gtrim = false,
-        quality_score = 20,
+        Boolean gtrim = false
+        Int quality_score = 20
         Int allowed_errors = 0
         # TODO: Pin the specific docker image version here when first release is ready
         String docker_image = "eppicenter/mad4hatter:develop"

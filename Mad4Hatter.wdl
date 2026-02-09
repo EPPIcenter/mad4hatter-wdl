@@ -33,8 +33,8 @@ workflow MAD4HatTeR {
         Int max_ee = 3 # Limit on number of expected errors within a read during filtering and trimming within DADA2
         Int max_mismatch = 0 # allow no errors when merging in dada2
         Int cutadapt_minlen = 100
-        gtrim = false
-        quality_score = 20
+        Boolean gtrim = false
+        Int quality_score = 20
         Int allowed_errors = 0
         Boolean just_concatenate = true
         Boolean mask_tandem_repeats = true

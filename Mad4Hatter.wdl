@@ -46,8 +46,7 @@ workflow MAD4HatTeR {
         String output_directory
         Int dada2_additional_memory = 0
         String? dada2_runtime_size
-        # TODO: Pin the specific docker image version here when first release is ready
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image = "eppicenter/mad4hatter:v1.0.0"
     }
 
     # Use sub() with a regular expression to check for valid characters in output_directory

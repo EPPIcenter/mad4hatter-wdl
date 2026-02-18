@@ -18,8 +18,7 @@ workflow Mad4HatterPostProcessing {
         Boolean mask_homopolymers = true
         File? masked_fasta
         File pool_options_json = "/opt/mad4hatter/conf/terra_panel.json" # Optional custom pool options JSON file. Needs to be on docker image.
-        # TODO: Pin the specific docker image version here when first release is ready
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image = "eppicenter/mad4hatter:v1.0.0"
     }
 
     # Check that either one of genome or refseq_fasta is provided or nothing is provided (then refseq_fasta is auto-generated)

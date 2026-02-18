@@ -14,8 +14,7 @@ workflow Mad4HatterQcOnly {
         Boolean gtrim = false
         Int quality_score = 20
         Int allowed_errors = 0
-        # TODO: Pin the specific docker image version here when first release is ready
-        String docker_image = "eppicenter/mad4hatter:develop"
+        String docker_image = "eppicenter/mad4hatter:v1.0.0"
     }
 
     File pool_options_json = "/opt/mad4hatter/conf/terra_panel.json" # Optional custom pool options JSON file. Needs to be on docker image.

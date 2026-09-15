@@ -209,13 +209,35 @@ merge_data <- function(manifest, sample_coverage, standardise_sample_name) {
     inner_join(manifest, by = "sample_name")
 }
 
+# Fail loudly and specifically here if a manifest join drops every row, rather
+# than letting an empty data frame silently propagate into a much more
+# confusing error several chunks later (e.g. "Faceting variables must have at
+# least one value").
+assert_nonempty_join <- function(joined, source_sample_names, label) {
+  if (nrow(joined) == 0) {
+    stop(
+      "No rows survived the manifest join for ", label, " -- 0 of ",
+      length(unique(source_sample_names)), " sample_name values matched the manifest.\n",
+      "This usually means sample names don't line up between the pipeline output and the manifest ",
+      "(e.g. standardise_sample_name stripped a suffix incorrectly, or the wrong manifest was supplied).\n",
+      "Example sample_name values from ", label, ": ",
+      paste(head(unique(source_sample_names), 5), collapse = ", "), "\n",
+      "Example sample_name values from manifest: ",
+      paste(head(unique(manifest$sample_name), 5), collapse = ", "),
+      call. = FALSE
+    )
+  }
+}
+
 # Reformat sample_coverage and add sample information from manifest
 sample_coverage_with_manifest <- merge_data(manifest, sample_coverage, standardise_sample_name)
+assert_nonempty_join(sample_coverage_with_manifest, sample_coverage$sample_name, "sample_coverage_postprocessed.txt")
 
 # Add manifest to amplicon coverage
 amplicon_coverage_with_manifest <- amplicon_coverage_qc %>%
   inner_join(manifest, by = c("sample_name")) %>%
   left_join(panel_information_qc %>% select(target_name, reaction), by = "target_name")
+assert_nonempty_join(amplicon_coverage_with_manifest, amplicon_coverage_qc$sample_name, "amplicon_coverage_postprocessed.txt")
 
 # Create sample summary stats
 summary_samples <- amplicon_coverage_with_manifest %>%

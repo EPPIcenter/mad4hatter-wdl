@@ -435,12 +435,18 @@ result <- locus_summary %>%
   group_by(sample_name, Category) %>%
   summarise(Count = n(), .groups = "drop")
 
-ggplot(result, aes(x = sample_name, y = Count, fill = Category, text = paste("Count:", Count))) +
-  geom_bar(stat = "identity", position = "stack") +
-  labs(title = "Alleles per Target for Positive Controls", x = "Sample Name", y = "Number of Targets") +
-  theme_minimal() +
-  scale_fill_manual(values = fill_colors) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+if (nrow(result) == 0) {
+  cat("No positive controls present in this run — nothing to plot.\n")
+} else {
+  print(
+    ggplot(result, aes(x = sample_name, y = Count, fill = Category, text = paste("Count:", Count))) +
+      geom_bar(stat = "identity", position = "stack") +
+      labs(title = "Alleles per Target for Positive Controls", x = "Sample Name", y = "Number of Targets") +
+      theme_minimal() +
+      scale_fill_manual(values = fill_colors) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  )
+}
 
 polyclonal_information <- pos_control_data %>%
   inner_join(locus_summary, by = c("sample_name", "target_name")) %>%
@@ -582,46 +588,52 @@ head(neg_control_information)
 #### Aggregated Reads per Target
 
 ```{r negative-control-aggregated}
-summary_data <- amplicons_negative %>%
-  group_by(reaction, target_name) %>%
-  summarise(sum_reads = sum(reads, na.rm = TRUE), .groups = "drop") %>%
-  mutate(
-    Chromosome = sub("-.*", "", target_name),
-    Start = as.numeric(sub(".*-(\\d+)-.*", "\\1", target_name))
-  ) %>%
-  arrange(Chromosome, Start) %>%
-  mutate(target_name = factor(target_name, levels = unique(target_name))) %>%
-  mutate(reaction = factor(reaction)) %>%
-  rowid_to_column("RowID")
+if (nrow(amplicons_negative) == 0) {
+  cat("No negative controls present in this run — nothing to aggregate.\n")
+} else {
+  summary_data <- amplicons_negative %>%
+    group_by(reaction, target_name) %>%
+    summarise(sum_reads = sum(reads, na.rm = TRUE), .groups = "drop") %>%
+    mutate(
+      Chromosome = sub("-.*", "", target_name),
+      Start = as.numeric(sub(".*-(\\d+)-.*", "\\1", target_name))
+    ) %>%
+    arrange(Chromosome, Start) %>%
+    mutate(target_name = factor(target_name, levels = unique(target_name))) %>%
+    mutate(reaction = factor(reaction)) %>%
+    rowid_to_column("RowID")
 
-summary_data <- amplicons_negative %>%
-  filter(reads > 0) %>%
-  group_by(target_name) %>%
-  summarise(samples_with_reads = paste(unique(sample_name), collapse = ", "), .groups = "drop") %>%
-  right_join(summary_data, by = "target_name")
+  summary_data <- amplicons_negative %>%
+    filter(reads > 0) %>%
+    group_by(target_name) %>%
+    summarise(samples_with_reads = paste(unique(sample_name), collapse = ", "), .groups = "drop") %>%
+    right_join(summary_data, by = "target_name")
 
-nth_label <- 20
-summary_data <- summary_data %>%
-  mutate(Locus_label = ifelse(RowID %% nth_label == 1, paste0(Chromosome, ":", Start), ""))
+  nth_label <- 20
+  summary_data <- summary_data %>%
+    mutate(Locus_label = ifelse(RowID %% nth_label == 1, paste0(Chromosome, ":", Start), ""))
 
-ggplot(summary_data, aes(
-  x = target_name, y = sum_reads, fill = reaction,
-  text = paste("Target: ", target_name, "<br>Total Reads: ", sum_reads, "<br>Controls with Reads: ", samples_with_reads)
-)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  xlab("Target (Chromosome:Start Coordinate)") +
-  ylab("Sum of Reads Across Controls") +
-  ggtitle("Total Reads per Target Across Negative Controls") +
-  theme_minimal(base_size = 14) +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
-    axis.title = element_text(size = 12),
-    panel.grid = element_blank(),
-    panel.background = element_blank(),
-    legend.position = "right"
-  ) +
-  scale_x_discrete(labels = summary_data$Locus_label) +
-  scale_fill_manual(values = reaction_colours)
+  print(
+    ggplot(summary_data, aes(
+      x = target_name, y = sum_reads, fill = reaction,
+      text = paste("Target: ", target_name, "<br>Total Reads: ", sum_reads, "<br>Controls with Reads: ", samples_with_reads)
+    )) +
+      geom_bar(stat = "identity", position = "dodge") +
+      xlab("Target (Chromosome:Start Coordinate)") +
+      ylab("Sum of Reads Across Controls") +
+      ggtitle("Total Reads per Target Across Negative Controls") +
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+        axis.title = element_text(size = 12),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "right"
+      ) +
+      scale_x_discrete(labels = summary_data$Locus_label) +
+      scale_fill_manual(values = reaction_colours)
+  )
+}
 ```
 
 ## Successful Amplification

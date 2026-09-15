@@ -71,6 +71,7 @@ samples_to_reprep_path <- "samples_to_reprep.csv"
 missing_samples_report_path <- "missing_samples_report.csv"
 filtered_resmarker_table_path <- "resmarker_table_filtered.txt"
 filtered_resmarker_microhaplotype_table_path <- "resmarker_microhaplotype_table_filtered.txt"
+sample_read_counts_path <- "sample_read_counts.csv"
 ```
 
 ```{r load-manifest}
@@ -855,9 +856,19 @@ filtered_collapsed_allele_data_path <- file.path(output_dir, filtered_collapsed_
 missing_targets_report_path <- file.path(output_dir, missing_targets_report_path)
 filtered_resmarker_table_path <- file.path(output_dir, filtered_resmarker_table_path)
 filtered_resmarker_microhaplotype_table_path <- file.path(output_dir, filtered_resmarker_microhaplotype_table_path)
+sample_read_counts_path <- file.path(output_dir, sample_read_counts_path)
 
 write.csv(reprep_repool_summary, reprep_repool_summary_path, row.names = FALSE)
 cat("Saved:", reprep_repool_summary_path, "\n")
+
+# PostprocessedReadCount per sample, using the already-standardized sample_name
+# from sample_coverage_with_manifest (avoids re-deriving standardise_sample_name
+# logic downstream, e.g. in write_metrics_to_sample_table.py).
+sample_read_counts <- sample_coverage_with_manifest %>%
+  select(sample_name, PostprocessedReadCount = OutputPostprocessing) %>%
+  distinct()
+write.csv(sample_read_counts, sample_read_counts_path, row.names = FALSE)
+cat("Saved:", sample_read_counts_path, "\n")
 
 write.csv(polyclonal_information, polyclonal_information_path, row.names = FALSE)
 cat("Saved:", polyclonal_information_path, "\n")

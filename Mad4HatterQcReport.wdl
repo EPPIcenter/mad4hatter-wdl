@@ -61,6 +61,10 @@ workflow Mad4HatterQcReport {
     call WriteMetricsToWorkspaceTable.write_metrics_to_workspace_table {
         input:
             reprep_repool_summary = generate_qc_report.reprep_repool_summary,
+            manifest = manifest,
+            sample_read_counts = generate_qc_report.sample_read_counts,
+            polyclonal_information = generate_qc_report.polyclonal_information,
+            neg_control_information = generate_qc_report.neg_control_information,
             workspace_name = workspace_name,
             workspace_billing_project = workspace_billing_project,
             docker_image = docker_image
@@ -79,6 +83,7 @@ workflow Mad4HatterQcReport {
         File filtered_collapsed_allele_data = generate_qc_report.filtered_collapsed_allele_data
         File filtered_resmarker_table = generate_qc_report.filtered_resmarker_table
         File filtered_resmarker_microhaplotype_table = generate_qc_report.filtered_resmarker_microhaplotype_table
+        File sample_read_counts = generate_qc_report.sample_read_counts
         File upsert_log = write_metrics_to_workspace_table.upsert_log
     }
 }

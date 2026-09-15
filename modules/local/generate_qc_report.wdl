@@ -61,6 +61,7 @@ task generate_qc_report {
         File filtered_collapsed_allele_data = "QC_report/allele_data_collapsed_filtered.txt"
         File filtered_resmarker_table = "QC_report/resmarker_table_filtered.txt"
         File filtered_resmarker_microhaplotype_table = "QC_report/resmarker_microhaplotype_table_filtered.txt"
+        File sample_read_counts = "QC_report/sample_read_counts.csv"
     }
 
     runtime {

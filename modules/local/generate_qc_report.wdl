@@ -2,7 +2,15 @@ version 1.0
 
 task generate_qc_report {
     input {
-        File zipped_outputs
+        # Mad4hatter pipeline outputs for a single run, passed individually
+        # rather than as a zip so they map cleanly onto Terra data table columns.
+        File sample_coverage_postprocessed
+        File amplicon_coverage_postprocessed
+        File allele_data
+        File allele_data_collapsed
+        File amplicon_info
+        File resmarker_table
+        File resmarker_microhaplotype_table
         File manifest
         Boolean standardise_sample_name = true
         Int read_threshold = 100
@@ -23,16 +31,18 @@ task generate_qc_report {
 
         cp /opt/mad4hatter/bin/qc_report.qmd .
 
-        mkdir -p results
-        unzip -q ~{zipped_outputs} -d results
-
-        # The zip may contain the run's files directly or nested under a single
-        # top-level folder (e.g. produced by `zip -r archive.zip run_folder/`).
-        results_dir=$(dirname "$(find results -name 'sample_coverage_postprocessed.txt' | head -n1)")
+        mkdir -p results/panel_information results/resistance_marker_module
+        cp ~{sample_coverage_postprocessed} results/sample_coverage_postprocessed.txt
+        cp ~{amplicon_coverage_postprocessed} results/amplicon_coverage_postprocessed.txt
+        cp ~{allele_data} results/allele_data.txt
+        cp ~{allele_data_collapsed} results/allele_data_collapsed.txt
+        cp ~{amplicon_info} results/panel_information/amplicon_info.tsv
+        cp ~{resmarker_table} results/resistance_marker_module/resmarker_table.txt
+        cp ~{resmarker_microhaplotype_table} results/resistance_marker_module/resmarker_microhaplotype_table.txt
 
         quarto render qc_report.qmd \
             --output qc_report.html \
-            -P results_dir:"${results_dir}" \
+            -P results_dir:results \
             -P manifest_path:"~{manifest}" \
             -P output_dir:QC_report \
             -P standardise_sample_name:~{standardise_sample_name} \

@@ -5,16 +5,14 @@ import "modules/local/write_metrics_to_workspace_table.wdl" as WriteMetricsToWor
 
 workflow Mad4HatterQcReport {
     input {
-        # Zipped Mad4hatter pipeline output folder for a single run. Must contain,
-        # at its top level or nested one directory deep:
-        #   sample_coverage_postprocessed.txt
-        #   amplicon_coverage_postprocessed.txt
-        #   allele_data.txt
-        #   allele_data_collapsed.txt
-        #   panel_information/amplicon_info.tsv
-        #   resistance_marker_module/resmarker_table.txt
-        #   resistance_marker_module/resmarker_microhaplotype_table.txt
-        File zipped_outputs
+        # Mad4hatter pipeline outputs for a single run.
+        File sample_coverage_postprocessed
+        File amplicon_coverage_postprocessed
+        File allele_data
+        File allele_data_collapsed
+        File amplicon_info
+        File resmarker_table
+        File resmarker_microhaplotype_table
 
         # Sample manifest TSV (sample_name, SampleType, Batch, Column, Row, Parasitemia).
         File manifest
@@ -42,7 +40,13 @@ workflow Mad4HatterQcReport {
 
     call GenerateQcReport.generate_qc_report {
         input:
-            zipped_outputs = zipped_outputs,
+            sample_coverage_postprocessed = sample_coverage_postprocessed,
+            amplicon_coverage_postprocessed = amplicon_coverage_postprocessed,
+            allele_data = allele_data,
+            allele_data_collapsed = allele_data_collapsed,
+            amplicon_info = amplicon_info,
+            resmarker_table = resmarker_table,
+            resmarker_microhaplotype_table = resmarker_microhaplotype_table,
             manifest = manifest,
             standardise_sample_name = standardise_sample_name,
             read_threshold = read_threshold,

@@ -78,6 +78,27 @@ sample_read_counts_path <- "sample_read_counts.csv"
 manifest <- read.csv(manifest_path, sep = "\t")
 # Ensure manifest column is sample_name
 colnames(manifest)[1] <- "sample_name"
+
+# read.csv's default na.strings = "NA" already converts a literal "NA" in the
+# file to a real missing value here, so is.na(SampleType) is exactly the
+# "explicitly marked missing" case -- it's distinct from a blank field, which
+# stays "" for a character column and is intentionally NOT allowed below.
+valid_sample_types <- c("positive", "negative", "sample")
+invalid_sample_type_rows <- manifest %>%
+  filter(!is.na(SampleType) & !(SampleType %in% valid_sample_types))
+
+if (nrow(invalid_sample_type_rows) > 0) {
+  stop(
+    "SampleType in the manifest file must be one of three options: 'positive', 'negative', or 'sample'. ",
+    "For missing data, insert 'NA'.\n",
+    "Invalid SampleType value(s) found for sample(s): ",
+    paste(
+      sprintf("%s ('%s')", invalid_sample_type_rows$sample_name, invalid_sample_type_rows$SampleType),
+      collapse = ", "
+    ),
+    call. = FALSE
+  )
+}
 ```
 
 ```{r input-summary}

@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Upsert per-sample and per-batch QC metrics onto Terra workspace entity tables.
+"""Upsert per-sample QC metrics onto a Terra workspace entity table, and write
+a single overall BatchPass value as a plain workflow output.
 
-Combines several qc_report.qmd outputs and the sample manifest into:
-- One row per sample on the `sample` (or --entity-type) table:
-  SampleType, Batch, Parasitemia, Run (from the manifest), PostprocessedReadCount
-  (from sample_read_counts.csv), BatchPass, and QCStatus (from
-  reprep_repool_summary.csv, worst status across a sample's reactions).
-- One row per Batch on the `sample_set` (or --set-entity-type) table: BatchPass.
+A workflow run is expected to cover one batch (one sample_set) at a time, so
+BatchPass is a single "Pass"/"Fail" value for the whole run, not a per-batch
+table. It's written to a plain text file (--batch-pass-output) rather than
+upserted onto a Terra sample_set -- there's no reliable way for this script
+to know the actual sample_set entity name for this batch -- so the WDL task
+reads that file back with read_string() into a String output, the same
+pattern move_outputs.wdl uses. That lets Terra map the workflow's batch_pass
+output straight onto a data table column as the literal value "Pass"/"Fail".
 
-Upserts via ops_utils' TerraWorkspace.upload_metadata_with_batch_upsert, using
-the credentials of the Cromwell task's attached service account.
+Also upserts one row per sample onto the `sample` (or --entity-type) table:
+SampleType, Batch, Parasitemia, Run (from the manifest), PostprocessedReadCount
+(from sample_read_counts.csv), BatchPass, and QCStatus (from
+reprep_repool_summary.csv, worst status across a sample's reactions), via
+ops_utils' TerraWorkspace.upload_metadata_with_batch_upsert, using the
+credentials of the Cromwell task's attached service account.
 """
 
 import argparse
@@ -23,6 +30,12 @@ from ops_utils.token_util import Token
 STATUS_RANK: dict[str, int] = {"reprep": 0, "repool": 1, "pass": 2}
 
 ManifestInfo = dict[str, str]
+
+# Kept in sync with the same check in qc_report.qmd. Unlike R's read.csv, this
+# CSV reader has no na.strings conversion, so a literal "NA" stays the string
+# "NA" here rather than becoming a missing value -- included in the allowed
+# set directly, rather than treated as "unset".
+VALID_SAMPLE_TYPES: set[str] = {"positive", "negative", "sample", "NA"}
 
 
 def read_rows(file_path: str, delimiter: str) -> list[dict[str, str]]:
@@ -41,17 +54,34 @@ def summarize_qc_status(summary_csv_path: str) -> dict[str, str]:
 
 
 def read_manifest(manifest_path: str) -> dict[str, ManifestInfo]:
-    """sample_name -> {SampleType, Batch, Parasitemia, Run}. Run defaults to '' if absent from the manifest."""
+    """sample_name -> {SampleType, Batch, Parasitemia, Run}. Run defaults to '' if absent from the manifest.
+
+    generate_qc_report already validates SampleType before this script ever
+    runs, so this shouldn't trigger in practice -- kept here for defense in
+    depth in case this script is ever run against a manifest directly.
+    """
     manifest: dict[str, ManifestInfo] = {}
+    invalid: list[tuple[str, str]] = []
     for row in read_rows(manifest_path, delimiter="\t"):
-        manifest[row["sample_name"]] = {
-            # The notebook only ever expects 'positive', 'negative', or 'sample'
-            # here; erroring on anything else is deferred for now.
-            "SampleType": row.get("SampleType", ""),
+        sample_name = row["sample_name"]
+        sample_type = row.get("SampleType", "")
+        if sample_type not in VALID_SAMPLE_TYPES:
+            invalid.append((sample_name, sample_type))
+        manifest[sample_name] = {
+            "SampleType": sample_type,
             "Batch": row.get("Batch", ""),
             "Parasitemia": row.get("Parasitemia", ""),
             "Run": row.get("Run", ""),
         }
+
+    if invalid:
+        details = ", ".join(f"{sample_name} ('{sample_type}')" for sample_name, sample_type in invalid)
+        raise ValueError(
+            "SampleType in the manifest file must be one of three options: 'positive', 'negative', or "
+            "'sample'. For missing data, insert 'NA'.\n"
+            f"Invalid SampleType value(s) found for sample(s): {details}"
+        )
+
     return manifest
 
 
@@ -59,54 +89,44 @@ def read_sample_read_counts(sample_read_counts_path: str) -> dict[str, str]:
     return {row["sample_name"]: row["PostprocessedReadCount"] for row in read_rows(sample_read_counts_path, delimiter=",")}
 
 
-def compute_batch_pass(
-    polyclonal_information_path: str,
-    neg_control_information_path: str,
-    manifest: dict[str, ManifestInfo],
-) -> dict[str, str]:
-    """Placeholder rule pending a final definition: a batch fails if any of its
-    positive controls has a polyclonal target, or any of its negative controls
-    has a target over the contamination read threshold."""
-    failing_batches: set[str] = set()
-
+def compute_batch_pass(polyclonal_information_path: str, neg_control_information_path: str) -> str:
+    """Placeholder rule pending a final definition: this run's batch fails if
+    there's any polyclonal positive-control target at all, or any negative
+    control over the contamination read threshold at all."""
     for path in (polyclonal_information_path, neg_control_information_path):
-        for row in read_rows(path, delimiter=","):
-            batch = manifest.get(row["sample_name"], {}).get("Batch")
-            if batch:
-                failing_batches.add(batch)
-
-    all_batches = {info["Batch"] for info in manifest.values() if info["Batch"]}
-    return {batch: ("Fail" if batch in failing_batches else "Pass") for batch in all_batches}
+        if read_rows(path, delimiter=","):
+            return "Fail"
+    return "Pass"
 
 
 def build_sample_row_data(
     qc_status_by_sample: dict[str, str],
     manifest: dict[str, ManifestInfo],
     read_counts: dict[str, str],
-    batch_pass: dict[str, str],
+    batch_pass: str,
     id_column: str,
 ) -> list[dict[str, str]]:
     row_data: list[dict[str, str]] = []
     for sample_name, status in qc_status_by_sample.items():
         info = manifest.get(sample_name, {})
-        batch = info.get("Batch", "")
         row_data.append(
             {
                 id_column: sample_name,
                 "SampleType": info.get("SampleType", ""),
-                "Batch": batch,
+                "Batch": info.get("Batch", ""),
                 "Parasitemia": info.get("Parasitemia", ""),
                 "Run": info.get("Run", ""),
                 "PostprocessedReadCount": read_counts.get(sample_name, ""),
-                "BatchPass": batch_pass.get(batch, ""),
+                "BatchPass": batch_pass,
                 "QCStatus": status,
             }
         )
     return row_data
 
 
-def build_sample_set_row_data(batch_pass: dict[str, str], id_column: str) -> list[dict[str, str]]:
-    return [{id_column: batch, "BatchPass": status} for batch, status in batch_pass.items()]
+def write_batch_pass(batch_pass: str, output_path: str) -> None:
+    with open(output_path, "w") as f:
+        f.write(batch_pass + "\n")
 
 
 def main() -> None:
@@ -119,7 +139,7 @@ def main() -> None:
     parser.add_argument("--workspace-namespace", required=True, help="Terra billing project")
     parser.add_argument("--workspace-name", required=True, help="Terra workspace name")
     parser.add_argument("--entity-type", default="sample", help="Terra entity type for per-sample rows (default: sample)")
-    parser.add_argument("--set-entity-type", default="sample_set", help="Terra entity type for per-batch rows (default: sample_set)")
+    parser.add_argument("--batch-pass-output", default="batch_pass.txt", help="Path to write this run's overall BatchPass value to")
     args = parser.parse_args()
 
     qc_status_by_sample = summarize_qc_status(args.summary)
@@ -129,12 +149,11 @@ def main() -> None:
 
     manifest = read_manifest(args.manifest)
     read_counts = read_sample_read_counts(args.sample_read_counts)
-    batch_pass = compute_batch_pass(args.polyclonal_information, args.neg_control_information, manifest)
+    batch_pass = compute_batch_pass(args.polyclonal_information, args.neg_control_information)
+    write_batch_pass(batch_pass, args.batch_pass_output)
 
     id_column = f"{args.entity_type}_id"
-    set_id_column = f"{args.set_entity_type}_id"
     sample_rows = build_sample_row_data(qc_status_by_sample, manifest, read_counts, batch_pass, id_column)
-    sample_set_rows = build_sample_set_row_data(batch_pass, set_id_column)
 
     terra_workspace = TerraWorkspace(
         billing_project=args.workspace_namespace,
@@ -144,13 +163,12 @@ def main() -> None:
     response = terra_workspace.upload_metadata_with_batch_upsert(
         table_data={
             args.entity_type: {"table_id_column": id_column, "row_data": sample_rows},
-            args.set_entity_type: {"table_id_column": set_id_column, "row_data": sample_set_rows},
         }
     )
     print(
-        f"Upserted QC metrics for {len(sample_rows)} samples onto '{args.entity_type}' and "
-        f"{len(sample_set_rows)} batches onto '{args.set_entity_type}' in "
-        f"{args.workspace_namespace}/{args.workspace_name} (HTTP {response.status_code})."
+        f"Upserted QC metrics for {len(sample_rows)} samples onto '{args.entity_type}' in "
+        f"{args.workspace_namespace}/{args.workspace_name} (HTTP {response.status_code}). "
+        f"BatchPass = {batch_pass} (written to {args.batch_pass_output})."
     )
 
 

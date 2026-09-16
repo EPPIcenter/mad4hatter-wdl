@@ -10,7 +10,6 @@ task write_metrics_to_workspace_table {
         String workspace_name
         String workspace_billing_project
         String entity_type = "sample"
-        String set_entity_type = "sample_set"
         String docker_image
     }
 
@@ -26,11 +25,12 @@ task write_metrics_to_workspace_table {
             --workspace-namespace ~{workspace_billing_project} \
             --workspace-name ~{workspace_name} \
             --entity-type ~{entity_type} \
-            --set-entity-type ~{set_entity_type}
+            --batch-pass-output batch_pass.txt
     >>>
 
     output {
         File upsert_log = stdout()
+        String batch_pass = read_string("batch_pass.txt")
     }
 
     runtime {

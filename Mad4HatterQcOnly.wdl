@@ -54,7 +54,7 @@ workflow Mad4HatterQcOnly {
 
     output {
         File amplicon_info = generate_amplicon_info.amplicon_info_ch
-        File amplicon_coverage = qc_only.sample_coverage_out
-        File sample_coverage = qc_only.amplicon_coverage_out
+        File amplicon_coverage = qc_only.amplicon_coverage_out
+        File sample_coverage = qc_only.sample_coverage_out
     }
 }

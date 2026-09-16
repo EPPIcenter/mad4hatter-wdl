@@ -29,7 +29,6 @@ task write_metrics_to_workspace_table {
     >>>
 
     output {
-        File upsert_log = stdout()
         String batch_pass = read_string("batch_pass.txt")
     }
 

@@ -88,7 +88,6 @@ workflow Mad4HatterQcReport {
         File filtered_resmarker_table = generate_qc_report.filtered_resmarker_table
         File filtered_resmarker_microhaplotype_table = generate_qc_report.filtered_resmarker_microhaplotype_table
         File sample_read_counts = generate_qc_report.sample_read_counts
-        File upsert_log = write_metrics_to_workspace_table.upsert_log
         String batch_pass = write_metrics_to_workspace_table.batch_pass
     }
 }

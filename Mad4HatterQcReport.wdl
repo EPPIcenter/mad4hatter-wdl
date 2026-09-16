@@ -5,11 +5,12 @@ import "modules/local/write_metrics_to_workspace_table.wdl" as WriteMetricsToWor
 
 workflow Mad4HatterQcReport {
     input {
-        # Mad4hatter pipeline outputs for a single run.
-        File sample_coverage_postprocessed
-        File amplicon_coverage_postprocessed
+        # Mad4hatter pipeline outputs for a single run. Named to match
+        # Mad4Hatter.wdl's own output names.
+        File sample_coverage
+        File amplicon_coverage
         File allele_data
-        File allele_data_collapsed
+        File allele_table_collapsed
         File amplicon_info
         File resmarker_table
         File resmarker_microhaplotype_table
@@ -40,10 +41,10 @@ workflow Mad4HatterQcReport {
 
     call GenerateQcReport.generate_qc_report {
         input:
-            sample_coverage_postprocessed = sample_coverage_postprocessed,
-            amplicon_coverage_postprocessed = amplicon_coverage_postprocessed,
+            sample_coverage_postprocessed = sample_coverage,
+            amplicon_coverage_postprocessed = amplicon_coverage,
             allele_data = allele_data,
-            allele_data_collapsed = allele_data_collapsed,
+            allele_data_collapsed = allele_table_collapsed,
             amplicon_info = amplicon_info,
             resmarker_table = resmarker_table,
             resmarker_microhaplotype_table = resmarker_microhaplotype_table,

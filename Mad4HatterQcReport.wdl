@@ -36,6 +36,8 @@ workflow Mad4HatterQcReport {
         String workspace_name
         String workspace_billing_project
 
+        String sample_table = "sample"
+
         String docker_image = "us-central1-docker.pkg.dev/operations-portal-427515/qc-report/mad4hatter-qc-report:latest"
     }
 
@@ -72,6 +74,7 @@ workflow Mad4HatterQcReport {
             neg_control_information = generate_qc_report.neg_control_information,
             workspace_name = workspace_name,
             workspace_billing_project = workspace_billing_project,
+            sample_table = sample_table,
             docker_image = docker_image
     }
 

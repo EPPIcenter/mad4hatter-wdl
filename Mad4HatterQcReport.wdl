@@ -74,7 +74,7 @@ workflow Mad4HatterQcReport {
             neg_control_information = generate_qc_report.neg_control_information,
             workspace_name = workspace_name,
             workspace_billing_project = workspace_billing_project,
-            sample_table = sample_table,
+            entity_type = sample_table,
             docker_image = docker_image
     }
 

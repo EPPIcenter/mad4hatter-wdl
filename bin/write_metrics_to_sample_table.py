@@ -12,6 +12,7 @@ pattern move_outputs.wdl uses. That lets Terra map the workflow's batch_pass
 output straight onto a data table column as the literal value "Pass"/"Fail".
 
 Also upserts one row per sample onto the `sample` (or --entity-type) table:
+DNA_sample_name (the QC sample name without the sequencer suffix),
 SampleType, Batch, Parasitemia, Run (from the manifest), PostprocessedReadCount
 (from sample_read_counts.csv), BatchPass, and QCStatus (from
 reprep_repool_summary.csv, worst status across a sample's reactions), via
@@ -20,6 +21,7 @@ credentials of the Cromwell task's attached service account.
 """
 
 import argparse
+import re
 
 from ops_utils.csv_util import Csv
 from ops_utils.request_util import RunRequest
@@ -42,11 +44,41 @@ def read_rows(file_path: str, delimiter: str) -> list[dict[str, str]]:
     return Csv(file_path=file_path, delimiter=delimiter).create_list_of_dicts_from_tsv()
 
 
-def summarize_qc_status(summary_csv_path: str) -> dict[str, str]:
-    """sample_name -> worst status ('reprep' > 'repool' > 'pass') across its reactions."""
+def resolve_terra_ids(sample_names: set[str], terra_ids: set[str]) -> dict[str, str]:
+    """QC sample_name -> the matching sample id already in the Terra table.
+
+    Terra sample ids carry a sequencer suffix (e.g. 'Sample-D20_S803') that the
+    QC summary's sample_name lacks. A name matches an id that equals it exactly
+    or that is the name followed by '_S<digits>'. Names with no match, or more
+    than one, are left out (and reported) rather than guessed at, so we never
+    upsert a stray row next to the real one.
+    """
+    resolved: dict[str, str] = {}
+    for name in sorted(sample_names):
+        if name in terra_ids:
+            resolved[name] = name
+            continue
+        pattern = re.compile(rf"^{re.escape(name)}_S\d+$")
+        matches = sorted(terra_id for terra_id in terra_ids if pattern.match(terra_id))
+        if len(matches) == 1:
+            resolved[name] = matches[0]
+        elif matches:
+            print(f"WARNING: '{name}' matches multiple Terra ids ({', '.join(matches)}); skipping.")
+        else:
+            print(f"WARNING: no Terra id found for '{name}'; skipping.")
+    return resolved
+
+
+def summarize_qc_status(summary_csv_path: str, terra_id_by_name: dict[str, str]) -> dict[str, str]:
+    """Terra sample id -> worst status ('reprep' > 'repool' > 'pass') across its reactions.
+
+    Rows whose sample_name has no entry in terra_id_by_name are dropped.
+    """
     per_sample: dict[str, str] = {}
     for row in read_rows(summary_csv_path, delimiter=","):
-        sample_name = row["sample_name"]
+        sample_name = terra_id_by_name.get(row["sample_name"])
+        if sample_name is None:
+            raise ValueError(f"No Terra id found for sample_name '{row['sample_name']}'")
         status = row["status"]
         if sample_name not in per_sample or STATUS_RANK.get(status, 99) < STATUS_RANK.get(per_sample[sample_name], 99):
             per_sample[sample_name] = status
@@ -101,17 +133,21 @@ def compute_batch_pass(polyclonal_information_path: str, neg_control_information
 
 def build_sample_row_data(
     qc_status_by_sample: dict[str, str],
+    name_by_terra_id: dict[str, str],
     manifest: dict[str, ManifestInfo],
     read_counts: dict[str, str],
     batch_pass: str,
     id_column: str,
 ) -> list[dict[str, str]]:
     row_data: list[dict[str, str]] = []
-    for sample_name, status in qc_status_by_sample.items():
+    for terra_id, status in qc_status_by_sample.items():
+        # manifest and read counts are keyed by the QC sample_name, not the Terra id
+        sample_name = name_by_terra_id[terra_id]
         info = manifest.get(sample_name, {})
         row_data.append(
             {
-                id_column: sample_name,
+                id_column: terra_id,
+                "DNA_sample_name": sample_name,
                 "SampleType": info.get("SampleType", ""),
                 "Batch": info.get("Batch", ""),
                 "Parasitemia": info.get("Parasitemia", ""),
@@ -142,24 +178,42 @@ def main() -> None:
     parser.add_argument("--batch-pass-output", default="batch_pass.txt", help="Path to write this run's overall BatchPass value to")
     args = parser.parse_args()
 
-    qc_status_by_sample = summarize_qc_status(args.summary)
-    if not qc_status_by_sample:
-        print("No samples found in summary CSV; nothing to upsert.")
-        return
-
-    manifest = read_manifest(args.manifest)
-    read_counts = read_sample_read_counts(args.sample_read_counts)
-    batch_pass = compute_batch_pass(args.polyclonal_information, args.neg_control_information)
-    write_batch_pass(batch_pass, args.batch_pass_output)
-
     id_column = f"{args.entity_type}_id"
-    sample_rows = build_sample_row_data(qc_status_by_sample, manifest, read_counts, batch_pass, id_column)
-
     terra_workspace = TerraWorkspace(
         billing_project=args.workspace_namespace,
         workspace_name=args.workspace_name,
         request_util=RunRequest(token=Token()),
     )
+
+    summary_names = {row["sample_name"] for row in read_rows(args.summary, delimiter=",")}
+    terra_ids = {
+        entity["name"]
+        for entity in terra_workspace.get_gcp_workspace_metrics(entity_type=args.entity_type, verbose=False)
+    }
+    terra_id_by_name = resolve_terra_ids(summary_names, terra_ids)
+    name_by_terra_id = {terra_id: name for name, terra_id in terra_id_by_name.items()}
+
+    qc_status_by_sample = summarize_qc_status(args.summary, terra_id_by_name)
+    if not qc_status_by_sample:
+        print("No samples in summary CSV matched a Terra sample id; nothing to upsert.")
+        return
+
+    manifest = read_manifest(manifest_path=args.manifest)
+    read_counts = read_sample_read_counts(sample_read_counts_path=args.sample_read_counts)
+    batch_pass = compute_batch_pass(
+        polyclonal_information_path=args.polyclonal_information, neg_control_information_path=args.neg_control_information
+    )
+    write_batch_pass(batch_pass=batch_pass, output_path=args.batch_pass_output)
+
+    sample_rows = build_sample_row_data(
+        qc_status_by_sample=qc_status_by_sample,
+        name_by_terra_id=name_by_terra_id,
+        manifest=manifest,
+        read_counts=read_counts,
+        batch_pass=batch_pass,
+        id_column=id_column
+    )
+
     response = terra_workspace.upload_metadata_with_batch_upsert(
         table_data={
             args.entity_type: {"table_id_column": id_column, "row_data": sample_rows},

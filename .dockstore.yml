@@ -20,3 +20,10 @@ workflows:
     readMePath: /Mad4Hatter.README.md
     testParameterFiles:
       - /Mad4Hatter.wdl
+
+  - name: Mad4HatterQcReport
+    subclass: WDL
+    primaryDescriptorPath: /Mad4HatterQcReport.wdl
+    readMePath: /Mad4HatterQcReport.README.md
+    testParameterFiles:
+      - /Mad4HatterQcReport.wdl

@@ -100,7 +100,6 @@ task dada2_analysis {
     runtime {
         docker: docker_image
         cpu: cpus
-        cpuPlatform: "Intel Ice Lake"
         memory: memory_gb + " GB"
         disks: "local-disk " + disk_size_gb + " SSD"
     }

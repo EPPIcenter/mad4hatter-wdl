@@ -8,10 +8,11 @@ If you are already familiar with Terra, you can launch the workflow directly fro
 
 ## Workflow Overview 
 
-This repository contains three workflows:
+This repository contains four workflows:
 * **`Mad4Hatter`** - The primary and most commonly used workflow. It runs the full pipeline, from raw FASTQs through microhaplotype calling and drug-resistance profiling. More details can be found below and in the dedicated [README](./Mad4Hatter.README.md).
 * **`Mad4HatterQcOnly`** - A lightweight version of the pipeline that runs only the steps required to generate basic QC metrics. More details are available [here](./Mad4HatterQcOnly.README.md).
 * **`Mad4HatterPostProcessing`** - A post-processing–only workflow that begins after DADA2. It requires a pre-generated allele table as input. More details can be found [here](./Mad4HatterPostProcessing.README.md).
+* **`Mad4HatterQcReport`** - Generates the QC report for a completed run and writes per-sample QC metrics back onto the Terra `sample` data table. More details can be found [here](./Mad4HatterQcReport.README.md).
 
 ![Mad4hatter metro map](./assets/mad4hatter_metro.png)
 

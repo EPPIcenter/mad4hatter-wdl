@@ -24,13 +24,8 @@ task write_metrics_to_workspace_table {
             --neg-control-information ~{neg_control_information} \
             --workspace-namespace ~{workspace_billing_project} \
             --workspace-name ~{workspace_name} \
-            --entity-type ~{entity_type} \
-            --batch-pass-output batch_pass.txt
+            --entity-type ~{entity_type}
     >>>
-
-    output {
-        String batch_pass = read_string("batch_pass.txt")
-    }
 
     runtime {
         docker: docker_image

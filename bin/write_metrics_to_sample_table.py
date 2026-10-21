@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
-"""Upsert per-sample QC metrics onto a Terra workspace entity table, and write
-a single overall BatchPass value as a plain workflow output.
+"""Upsert per-sample QC metrics onto a Terra workspace entity table.
 
-A workflow run is expected to cover one batch (one sample_set) at a time, so
-BatchPass is a single "Pass"/"Fail" value for the whole run, not a per-batch
-table. It's written to a plain text file (--batch-pass-output) rather than
-upserted onto a Terra sample_set -- there's no reliable way for this script
-to know the actual sample_set entity name for this batch -- so the WDL task
-reads that file back with read_string() into a String output, the same
-pattern move_outputs.wdl uses. That lets Terra map the workflow's batch_pass
-output straight onto a data table column as the literal value "Pass"/"Fail".
+Upserts one row per sample onto the `sample` (or --entity-type) table:
+library_sample_name (the QC sample name without the sequencer suffix),
+sample_type, batch, parasites_per_ul, sequencing_run (from the manifest),
+postprocessed_read_count (from sample_read_counts.csv), batch_pass (see
+compute_batch_pass_by_batch), Library_sample_qc_status (from
+reprep_repool_summary.csv, worst status across a sample's reactions), and
+mean_prop_good_loci (mean of prop_good_loci across all of a sample's
+reactions), via ops_utils' TerraWorkspace.upload_metadata_with_batch_upsert,
+using the credentials of the Cromwell task's attached service account.
 
-Also upserts one row per sample onto the `sample` (or --entity-type) table:
-DNA_sample_name (the QC sample name without the sequencer suffix),
-SampleType, Batch, Parasitemia, Run (from the manifest), PostprocessedReadCount
-(from sample_read_counts.csv), BatchPass, and QCStatus (from
-reprep_repool_summary.csv, worst status across a sample's reactions), via
-ops_utils' TerraWorkspace.upload_metadata_with_batch_upsert, using the
-credentials of the Cromwell task's attached service account.
+A single run may contain multiple batches, so batch_pass is computed once
+per batch (not once per run) and looked up per sample by its manifest Batch.
 """
 
 import argparse
@@ -69,20 +64,43 @@ def resolve_terra_ids(sample_names: set[str], terra_ids: set[str]) -> dict[str, 
     return resolved
 
 
-def summarize_qc_status(summary_csv_path: str, terra_id_by_name: dict[str, str]) -> dict[str, str]:
-    """Terra sample id -> worst status ('reprep' > 'repool' > 'pass') across its reactions.
-
-    Rows whose sample_name has no entry in terra_id_by_name are dropped.
-    """
+def worst_status_by_sample_name(summary_csv_path: str) -> dict[str, str]:
+    """sample_name -> worst status ('reprep' > 'repool' > 'pass') across its reactions."""
     per_sample: dict[str, str] = {}
     for row in read_rows(summary_csv_path, delimiter=","):
-        sample_name = terra_id_by_name.get(row["sample_name"])
-        if sample_name is None:
-            raise ValueError(f"No Terra id found for sample_name '{row['sample_name']}'")
+        sample_name = row["sample_name"]
         status = row["status"]
         if sample_name not in per_sample or STATUS_RANK.get(status, 99) < STATUS_RANK.get(per_sample[sample_name], 99):
             per_sample[sample_name] = status
     return per_sample
+
+
+def summarize_qc_status(summary_csv_path: str, terra_id_by_name: dict[str, str]) -> dict[str, str]:
+    """Terra sample id -> worst status ('reprep' > 'repool' > 'pass') across its reactions.
+
+    sample_names with no entry in terra_id_by_name are dropped.
+    """
+    per_sample: dict[str, str] = {}
+    for sample_name, status in worst_status_by_sample_name(summary_csv_path).items():
+        terra_id = terra_id_by_name.get(sample_name)
+        if terra_id is None:
+            raise ValueError(f"No Terra id found for sample_name '{sample_name}'")
+        per_sample[terra_id] = status
+    return per_sample
+
+
+def summarize_mean_prop_good_loci(summary_csv_path: str, terra_id_by_name: dict[str, str]) -> dict[str, float]:
+    """Terra sample id -> mean of prop_good_loci across all of its reactions (there may be more than two).
+
+    Rows whose sample_name has no entry in terra_id_by_name are dropped.
+    """
+    values_by_sample: dict[str, list[float]] = {}
+    for row in read_rows(summary_csv_path, delimiter=","):
+        sample_name = terra_id_by_name.get(row["sample_name"])
+        if sample_name is None:
+            raise ValueError(f"No Terra id found for sample_name '{row['sample_name']}'")
+        values_by_sample.setdefault(sample_name, []).append(float(row["prop_good_loci"]))
+    return {sample_name: sum(values) / len(values) for sample_name, values in values_by_sample.items()}
 
 
 def read_manifest(manifest_path: str) -> dict[str, ManifestInfo]:
@@ -121,22 +139,57 @@ def read_sample_read_counts(sample_read_counts_path: str) -> dict[str, str]:
     return {row["sample_name"]: row["PostprocessedReadCount"] for row in read_rows(sample_read_counts_path, delimiter=",")}
 
 
-def compute_batch_pass(polyclonal_information_path: str, neg_control_information_path: str) -> str:
-    """Placeholder rule pending a final definition: this run's batch fails if
-    there's any polyclonal positive-control target at all, or any negative
-    control over the contamination read threshold at all."""
-    for path in (polyclonal_information_path, neg_control_information_path):
-        if read_rows(path, delimiter=","):
-            return "Fail"
-    return "Pass"
+def compute_batch_pass_by_batch(
+    summary_csv_path: str,
+    polyclonal_information_path: str,
+    neg_control_information_path: str,
+    manifest: dict[str, ManifestInfo],
+) -> dict[str, str]:
+    """Batch -> "PASS", "CheckManually", or "NoControls".
+
+    "PASS" requires every reaction of every positive control in the batch to
+    have status "pass" (worst_status_by_sample_name) and the control to be
+    absent from polyclonal_information (monoclonal), and every negative
+    control in the batch to be absent from neg_control_information
+    (uncontaminated). A batch with no positive controls, or no negative
+    controls, gets "NoControls" instead of being evaluated. Anything else is
+    "CheckManually".
+    """
+    status_by_sample_name = worst_status_by_sample_name(summary_csv_path)
+    polyclonal_sample_names = {row["sample_name"] for row in read_rows(polyclonal_information_path, delimiter=",")}
+    contaminated_sample_names = {row["sample_name"] for row in read_rows(neg_control_information_path, delimiter=",")}
+
+    positive_names_by_batch: dict[str, set[str]] = {}
+    negative_names_by_batch: dict[str, set[str]] = {}
+    for sample_name, info in manifest.items():
+        if info["SampleType"] == "positive":
+            positive_names_by_batch.setdefault(info["Batch"], set()).add(sample_name)
+        elif info["SampleType"] == "negative":
+            negative_names_by_batch.setdefault(info["Batch"], set()).add(sample_name)
+
+    batch_pass: dict[str, str] = {}
+    for batch in {info["Batch"] for info in manifest.values()}:
+        positive_names = positive_names_by_batch.get(batch, set())
+        negative_names = negative_names_by_batch.get(batch, set())
+        if not positive_names or not negative_names:
+            batch_pass[batch] = "NoControls"
+            continue
+        positives_ok = all(
+            status_by_sample_name.get(name) == "pass" and name not in polyclonal_sample_names
+            for name in positive_names
+        )
+        negatives_ok = all(name not in contaminated_sample_names for name in negative_names)
+        batch_pass[batch] = "PASS" if positives_ok and negatives_ok else "CheckManually"
+    return batch_pass
 
 
 def build_sample_row_data(
     qc_status_by_sample: dict[str, str],
+    mean_prop_good_loci_by_sample: dict[str, float],
     name_by_terra_id: dict[str, str],
     manifest: dict[str, ManifestInfo],
     read_counts: dict[str, str],
-    batch_pass: str,
+    batch_pass_by_batch: dict[str, str],
     id_column: str,
 ) -> list[dict[str, str]]:
     row_data: list[dict[str, str]] = []
@@ -147,22 +200,18 @@ def build_sample_row_data(
         row_data.append(
             {
                 id_column: terra_id,
-                "DNA_sample_name": sample_name,
-                "SampleType": info.get("SampleType", ""),
-                "Batch": info.get("Batch", ""),
-                "Parasitemia": info.get("Parasitemia", ""),
-                "Run": info.get("Run", ""),
-                "PostprocessedReadCount": read_counts.get(sample_name, ""),
-                "BatchPass": batch_pass,
-                "QCStatus": status,
+                "Library_sample_name": sample_name,
+                "sample_type": info.get("SampleType", ""),
+                "batch": info.get("Batch", ""),
+                "parasites_per_ul": info.get("Parasitemia", ""),
+                "sequencing_run": info.get("Run", ""),
+                "postprocessed_read_count": read_counts.get(sample_name, ""),
+                "batch_pass": batch_pass_by_batch.get(info.get("Batch", ""), "CheckManually"),
+                "Library_sample_qc_status": status,
+                "mean_prop_good_loci": mean_prop_good_loci_by_sample.get(terra_id, ""),
             }
         )
     return row_data
-
-
-def write_batch_pass(batch_pass: str, output_path: str) -> None:
-    with open(output_path, "w") as f:
-        f.write(batch_pass + "\n")
 
 
 def main() -> None:
@@ -175,7 +224,6 @@ def main() -> None:
     parser.add_argument("--workspace-namespace", required=True, help="Terra billing project")
     parser.add_argument("--workspace-name", required=True, help="Terra workspace name")
     parser.add_argument("--entity-type", default="sample", help="Terra entity type for per-sample rows (default: sample)")
-    parser.add_argument("--batch-pass-output", default="batch_pass.txt", help="Path to write this run's overall BatchPass value to")
     args = parser.parse_args()
 
     id_column = f"{args.entity_type}_id"
@@ -198,19 +246,23 @@ def main() -> None:
         print("No samples in summary CSV matched a Terra sample id; nothing to upsert.")
         return
 
+    mean_prop_good_loci_by_sample = summarize_mean_prop_good_loci(args.summary, terra_id_by_name)
     manifest = read_manifest(manifest_path=args.manifest)
     read_counts = read_sample_read_counts(sample_read_counts_path=args.sample_read_counts)
-    batch_pass = compute_batch_pass(
-        polyclonal_information_path=args.polyclonal_information, neg_control_information_path=args.neg_control_information
+    batch_pass_by_batch = compute_batch_pass_by_batch(
+        summary_csv_path=args.summary,
+        polyclonal_information_path=args.polyclonal_information,
+        neg_control_information_path=args.neg_control_information,
+        manifest=manifest,
     )
-    write_batch_pass(batch_pass=batch_pass, output_path=args.batch_pass_output)
 
     sample_rows = build_sample_row_data(
         qc_status_by_sample=qc_status_by_sample,
+        mean_prop_good_loci_by_sample=mean_prop_good_loci_by_sample,
         name_by_terra_id=name_by_terra_id,
         manifest=manifest,
         read_counts=read_counts,
-        batch_pass=batch_pass,
+        batch_pass_by_batch=batch_pass_by_batch,
         id_column=id_column
     )
 
@@ -219,10 +271,11 @@ def main() -> None:
             args.entity_type: {"table_id_column": id_column, "row_data": sample_rows},
         }
     )
+    batch_pass_summary = ", ".join(f"{batch}: {value}" for batch, value in sorted(batch_pass_by_batch.items()))
     print(
         f"Upserted QC metrics for {len(sample_rows)} samples onto '{args.entity_type}' in "
         f"{args.workspace_namespace}/{args.workspace_name} (HTTP {response.status_code}). "
-        f"BatchPass = {batch_pass} (written to {args.batch_pass_output})."
+        f"BatchPass by batch: {batch_pass_summary}."
     )
 
 

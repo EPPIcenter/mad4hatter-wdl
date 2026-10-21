@@ -38,7 +38,7 @@ workflow Mad4HatterQcReport {
 
         String sample_table = "sample"
 
-        String docker_image = "us-central1-docker.pkg.dev/operations-portal-427515/qc-report/mad4hatter-qc-report:latest"
+        String docker_image = "us-central1-docker.pkg.dev/operations-portal-427515/qc-report/mad4hatter-qc-report:v1.0.2"
     }
 
     call GenerateQcReport.generate_qc_report {

@@ -128,12 +128,14 @@ amplicon_coverage <- read.delim(amplicon_coverage_path)
 allele_data <- read.csv(allele_data_path, sep = "\t")
 panel_information <- read.csv(panel_information_path, sep = "\t")
 
-# Standardize sample names if requested
+# Standardize sample names if requested. Only strips a trailing sequencer
+# suffix when one is actually present, so it's safe to also run on the
+# manifest's sample_name below -- a manifest already using the bare name
+# passes through unchanged, and one using the full Terra-style id
+# (name_S<n> or name_S<n>_L<n>) is reduced to the same bare form.
 standardise_name <- function(sample_name) {
   if (standardise_sample_name) {
-    sample_name %>%
-      sub("_L001$", "", .) %>%
-      word(., start = 1, end = -2, sep = "_")
+    sub("_S[0-9]+(_L[0-9]+)?$", "", sample_name)
   } else {
     sample_name
   }
@@ -142,6 +144,7 @@ standardise_name <- function(sample_name) {
 amplicon_coverage <- amplicon_coverage %>% mutate(sample_name = standardise_name(sample_name))
 allele_data <- allele_data %>% mutate(sample_name = standardise_name(sample_name))
 sample_coverage <- sample_coverage %>% mutate(sample_name = standardise_name(sample_name))
+manifest <- manifest %>% mutate(sample_name = standardise_name(sample_name))
 ```
 
 ## Section A: Locus Filtering

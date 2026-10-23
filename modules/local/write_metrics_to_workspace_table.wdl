@@ -23,7 +23,7 @@ task write_metrics_to_workspace_table {
             --polyclonal-information ~{polyclonal_information} \
             --neg-control-information ~{neg_control_information} \
             --workspace-namespace ~{workspace_billing_project} \
-            --workspace-name ~{workspace_name} \
+            --workspace-name "~{workspace_name}" \
             --entity-type ~{entity_type}
     >>>
 

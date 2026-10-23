@@ -34,6 +34,15 @@ ManifestInfo = dict[str, str]
 # set directly, rather than treated as "unset".
 VALID_SAMPLE_TYPES: set[str] = {"positive", "negative", "sample", "NA"}
 
+# Kept in sync with standardise_name() in qc_report.qmd: only strips a
+# trailing sequencer suffix (optionally with a lane suffix) when one is
+# actually present, so a manifest using the bare QC sample name is unaffected.
+SEQUENCER_SUFFIX = re.compile(r"_S\d+(_L\d+)?$")
+
+
+def strip_sequencer_suffix(sample_name: str) -> str:
+    return SEQUENCER_SUFFIX.sub("", sample_name)
+
 
 def read_rows(file_path: str, delimiter: str) -> list[dict[str, str]]:
     return Csv(file_path=file_path, delimiter=delimiter).create_list_of_dicts_from_tsv()
@@ -108,6 +117,10 @@ def summarize_mean_prop_good_loci(summary_csv_path: str, terra_id_by_name: dict[
 def read_manifest(manifest_path: str) -> dict[str, ManifestInfo]:
     """sample_name -> {SampleType, Batch, Parasitemia, Run}. Run defaults to '' if absent from the manifest.
 
+    Keyed by the bare sample name (see strip_sequencer_suffix) so this lines up
+    with the bare names in terra_id_by_name regardless of whether the manifest
+    itself uses the bare name or the full Terra-style id.
+
     generate_qc_report already validates SampleType before this script ever
     runs, so this shouldn't trigger in practice -- kept here for defense in
     depth in case this script is ever run against a manifest directly.
@@ -115,10 +128,11 @@ def read_manifest(manifest_path: str) -> dict[str, ManifestInfo]:
     manifest: dict[str, ManifestInfo] = {}
     invalid: list[tuple[str, str]] = []
     for row in read_rows(manifest_path, delimiter="\t"):
-        sample_name = row["sample_name"]
+        raw_sample_name = row["sample_name"]
+        sample_name = strip_sequencer_suffix(raw_sample_name)
         sample_type = row.get("SampleType", "")
         if sample_type not in VALID_SAMPLE_TYPES:
-            invalid.append((sample_name, sample_type))
+            invalid.append((raw_sample_name, sample_type))
         manifest[sample_name] = {
             "SampleType": sample_type,
             "Batch": row.get("Batch", ""),

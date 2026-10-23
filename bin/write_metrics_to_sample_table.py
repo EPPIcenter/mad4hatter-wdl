@@ -43,17 +43,19 @@ def resolve_terra_ids(sample_names: set[str], terra_ids: set[str]) -> dict[str, 
     """QC sample_name -> the matching sample id already in the Terra table.
 
     Terra sample ids carry a sequencer suffix (e.g. 'Sample-D20_S803') that the
-    QC summary's sample_name lacks. A name matches an id that equals it exactly
-    or that is the name followed by '_S<digits>'. Names with no match, or more
-    than one, are left out (and reported) rather than guessed at, so we never
-    upsert a stray row next to the real one.
+    QC summary's sample_name lacks, and may also keep the lane suffix (e.g.
+    'Sample-D20_S803_L001'). A name matches an id that equals it exactly or
+    that is the name followed by '_S<digits>', optionally followed by
+    '_L<digits>'. Names with no match, or more than one, are left out (and
+    reported) rather than guessed at, so we never upsert a stray row next to
+    the real one.
     """
     resolved: dict[str, str] = {}
     for name in sorted(sample_names):
         if name in terra_ids:
             resolved[name] = name
             continue
-        pattern = re.compile(rf"^{re.escape(name)}_S\d+$")
+        pattern = re.compile(rf"^{re.escape(name)}_S\d+(_L\d+)?$")
         matches = sorted(terra_id for terra_id in terra_ids if pattern.match(terra_id))
         if len(matches) == 1:
             resolved[name] = matches[0]

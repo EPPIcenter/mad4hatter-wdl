@@ -2,6 +2,8 @@ version 1.0
 
 import "modules/local/generate_qc_report.wdl" as GenerateQcReport
 import "modules/local/write_metrics_to_workspace_table.wdl" as WriteMetricsToWorkspaceTable
+import "modules/local/check_terra_env.wdl" as CheckTerraEnv
+import "modules/local/error_with_message.wdl" as ErrorWithMessage
 
 workflow Mad4HatterQcReport {
     input {
@@ -32,13 +34,26 @@ workflow Mad4HatterQcReport {
         Boolean reaction_as_pool = false
 
         # Terra workspace identifiers used to write QC status back onto the
-        # workspace's sample data table.
-        String workspace_name
-        String workspace_billing_project
+        # workspace's sample data table. If either is omitted, both are
+        # determined by introspecting the Terra environment this run is in.
+        String? workspace_name
+        String? workspace_billing_project
 
         String sample_table
 
         String docker_image = "us-central1-docker.pkg.dev/operations-portal-427515/qc-report/mad4hatter-qc-report:v1.0.3"
+    }
+
+    # Determine the workspace we are running in when the caller did not say.
+    if (!defined(workspace_name) || !defined(workspace_billing_project)) {
+        call CheckTerraEnv.check_terra_env {}
+
+        if (!check_terra_env.is_running_on_terra) {
+            call ErrorWithMessage.error_with_message as not_running_on_terra {
+                input:
+                    message = "Error: 'workspace_name' and/or 'workspace_billing_project' was not provided, and this run is not on Terra so they cannot be determined automatically. Please provide both inputs."
+            }
+        }
     }
 
     call GenerateQcReport.generate_qc_report {
@@ -72,8 +87,8 @@ workflow Mad4HatterQcReport {
             sample_read_counts = generate_qc_report.sample_read_counts,
             polyclonal_information = generate_qc_report.polyclonal_information,
             neg_control_information = generate_qc_report.neg_control_information,
-            workspace_name = workspace_name,
-            workspace_billing_project = workspace_billing_project,
+            workspace_name = select_first([workspace_name, check_terra_env.workspace_name]),
+            workspace_billing_project = select_first([workspace_billing_project, check_terra_env.workspace_namespace]),
             entity_type = sample_table,
             docker_image = docker_image
     }

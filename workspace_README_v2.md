@@ -88,7 +88,7 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
 1. Navigate to the **"Workflows"** tab and select **`02_AmpliconPanelQcReport`**.
 2. Select the same `YOUR_TABLE_set` table and the set row you ran `01_Mad4Hatter` or `01_PfPhast` on.
 3. Configure the inputs. The seven file inputs (`sample_coverage`, `amplicon_coverage`, `allele_data`, `allele_table_collapsed`, `amplicon_info`, `resmarker_table`, `resmarker_microhaplotype_table`) are all available on the sample set row and should be set to `this.{column_name}`, e.g. `this.allele_data`. Add the `manifest` file.
-4. **Leave the workspace, billing project and data table inputs empty** — they are optional and worked out from the submission. See [Workspace and table detection](#workspace-and-table-detection).
+4. **Leave `workspace_name`, `workspace_billing_project` and `sample_table` empty** unless you need to override them. The workflow detects the workspace it is running in and the data table the run was launched from. See [Workspace and table detection](#workspace-and-table-detection).
 5. Click **"Launch"**.
 6. When it finishes, review `qc_report_html` and the per-sample QC columns written onto your data table before continuing.
 
@@ -102,13 +102,25 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
    - `loci_of_interest_bed` → `gs://broad-malaria-public/mad4hatter_workspace_data/default_principal_resistance_marker_info_table.bed` — a BED of the loci that single-locus estimates are computed at.
 
    To use your own instead, upload them to the workspace bucket and select them with the "Browse bucket files" folder button next to the input. Reference examples live in the [plasmodiumdrugres-wdl repo](https://github.com/PlasmoGenEpi/plasmodiumdrugres-wdl/tree/main/tests/input).
-5. **Leave the workspace, billing project, data table and bucket inputs empty** — they are optional and worked out from the submission. See [Workspace and table detection](#workspace-and-table-detection).
+5. **Leave `billing_project`, `workspace_name`, `sample_table` and `workspace_bucket` empty** unless you need to override them — see [Workspace and table detection](#workspace-and-table-detection).
 6. Click **"Launch"**.
 7. View outputs in the **"Data"** tab: summary files on the sample set row, and per-sample `resmarker_*` columns on the per-sample table.
 
 ## Workspace and table detection
 
-`02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` write back into your data tables, so they need to know which workspace and which table to write to. They work this out from the submission itself, so **the workspace, billing project, data table and bucket inputs are all optional and can be left empty**. You may set them to this workspace's values if you prefer to be explicit, but it is not required.
+`02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` write back into your data tables, so they need to know which workspace and which table to write to. **Both now detect this automatically** and all of the following inputs are optional:
+
+| Input | Workflow | Detected from |
+|---|---|---|
+| `workspace_name` | `02`, `03` | the Terra workspace the submission is running in |
+| `workspace_billing_project` (`02`) / `billing_project` (`03`) | `02`, `03` | the Terra billing project of that workspace |
+| `sample_table` | `02`, `03` | the submission's root entity — a run launched on `mad4hatter_sample_set` resolves to `mad4hatter_sample` |
+| `workspace_bucket` | `03` | the workspace bucket, when it cannot be read off the output paths |
+
+Provide a value only to override the detected one. Two cases to be aware of:
+
+* If you launch a run **outside Terra** without providing these, the workflow fails with a message naming the inputs it needs, rather than writing to the wrong place.
+* `sample_table` is derived from the submission's **root entity**, so a run launched with inputs defined by file paths rather than from a data table has nothing to infer from. In that case provide `sample_table` explicitly.
 
 Row ids are matched before anything is written: a specimen named `SRR26819135` is matched to the existing row `SRR26819135_S1_L001`, so the real row is updated rather than a new, half-empty row being created beside it. Specimens with no match, or more than one, are skipped and reported in the task log.
 
@@ -253,9 +265,9 @@ Generates the QC report for one completed `01_Mad4Hatter` run, produces filtered
 | **resmarker_table**                  | The resistance marker table from the `01_Mad4Hatter` run.                                                                                       | File    | Yes      | - |
 | **resmarker_microhaplotype_table**   | The resistance marker microhaplotype table from the `01_Mad4Hatter` run.                                                                        | File    | Yes      | - |
 | **manifest**                         | Sample manifest TSV (`sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia`; `Run` used for `sequencing_run` when present).        | File    | Yes      | - |
-| **workspace_name**                   | Terra workspace whose data table is updated. Optional — may be left empty.                                                                       | String? | No       | (detected) |
-| **workspace_billing_project**        | Terra billing project (namespace) for `workspace_name`. Optional — may be left empty.                                                            | String? | No       | (detected) |
-| **sample_table**                     | Terra data table to upsert per-sample QC metrics onto. Optional — may be left empty.                                                             | String? | No       | (detected) |
+| **workspace_name**                   | Terra workspace whose data table is updated. Detected from the running submission when omitted.                                                  | String? | No       | (detected) |
+| **workspace_billing_project**        | Terra billing project (namespace) for `workspace_name`. Detected from the running submission when omitted.                                       | String? | No       | (detected) |
+| **sample_table**                     | Terra data table to upsert per-sample QC metrics onto. Detected from the submission's root entity when omitted.                                  | String? | No       | (detected) |
 | **standardise_sample_name**          | Whether to strip the sequencer suffix (e.g. `_S1`) from sample names before matching to the manifest.                                           | Boolean | No       | true |
 | **read_threshold**                   | Minimum reads for a target to be considered successfully amplified.                                                                             | Int     | No       | 100 |
 | **read_filter**                      | Minimum reads for an ASV to be counted when assessing positive-control polyclonality.                                                           | Int     | No       | 0 |
@@ -318,10 +330,10 @@ Translates amplicon sequences at loci of interest into amino acid calls, then es
 | **reference** | Reference FASTA of insert sequences, one record per `target_name`. | File | Yes | - |
 | **loci_of_interest_bed** | BED of loci of interest; single-locus estimates are computed at these loci. Preconfigured to `gs://broad-malaria-public/mad4hatter_workspace_data/default_principal_resistance_marker_info_table.bed`. | File | Yes | preconfigured |
 | **loci_groups** | TSV/CSV defining multi-locus groups; multi-locus estimates are computed for these groups. Preconfigured to `gs://broad-malaria-public/mad4hatter_workspace_data/default_loci_groups.tsv`. | File | Yes | preconfigured |
-| **billing_project** | Terra billing project of the workspace whose data table is updated. Optional — may be left empty. | String? | No | (detected) |
-| **workspace_name** | Name of the Terra workspace whose data table is updated. Optional — may be left empty. | String? | No | (detected) |
-| **sample_table** | Terra data table the resmarker columns are written to. Optional — may be left empty. The row id column is always `<sample_table>_id`. | String? | No | (detected) |
-| **workspace_bucket** | Workspace bucket id (e.g. `fc-…`, no `gs://`). Optional — may be left empty. | String? | No | (detected) |
+| **billing_project** | Terra billing project of the workspace whose data table is updated. Detected from the running submission when omitted. | String? | No | (detected) |
+| **workspace_name** | Name of the Terra workspace whose data table is updated. Detected from the running submission when omitted. | String? | No | (detected) |
+| **sample_table** | Terra data table the resmarker columns are written to. Detected from the submission's root entity when omitted. The row id column is always `<sample_table>_id`. | String? | No | (detected) |
+| **workspace_bucket** | Workspace bucket id (e.g. `fc-…`, no `gs://`). Set only if detection from the output paths and from the workspace both fail. | String? | No | (detected) |
 | **pmo** | PMO JSON file. | File? | No | - |
 | **population_assignment** | TSV/CSV mapping `specimen_name` to `population`; enables per-population results. | File? | No | - |
 | **pmo_population_fields** | Comma-separated PMO specimen metadata fields used to build the population label; used only when `pmo` is given and `population_assignment` is not. | String? | No | - |

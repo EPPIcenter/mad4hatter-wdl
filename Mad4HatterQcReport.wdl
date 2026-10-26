@@ -39,19 +39,31 @@ workflow Mad4HatterQcReport {
         String? workspace_name
         String? workspace_billing_project
 
-        String sample_table
+        # Terra data table whose rows the per-sample QC metrics are written to.
+        # Detected from the submission's root entity when omitted.
+        String? sample_table
 
         String docker_image = "us-central1-docker.pkg.dev/operations-portal-427515/qc-report/mad4hatter-qc-report:v1.0.3"
     }
 
     # Determine the workspace we are running in when the caller did not say.
-    if (!defined(workspace_name) || !defined(workspace_billing_project)) {
+    if (!defined(workspace_name) || !defined(workspace_billing_project) || !defined(sample_table)) {
         call GetTerraEnvInfo.get_terra_env_info {}
 
         if (!get_terra_env_info.is_running_on_terra) {
             call ErrorWithMessage.error_with_message as not_running_on_terra {
                 input:
-                    message = "Error: 'workspace_name' and/or 'workspace_billing_project' was not provided, and this run is not on Terra so they cannot be determined automatically. Please provide both inputs."
+                    message = "Error: one or more of 'workspace_name', 'workspace_billing_project' and 'sample_table' was not provided, and this run is not on Terra so they cannot be determined automatically. Please provide them explicitly."
+            }
+        }
+
+        # The submission's root entity is what names the data table, so a
+        # workflow launched from file paths rather than from a data table has
+        # nothing to detect.
+        if (!defined(sample_table) && get_terra_env_info.sample_table == "") {
+            call ErrorWithMessage.error_with_message as no_sample_table {
+                input:
+                    message = "Error: 'sample_table' was not provided and this submission has no root entity to infer it from (it was most likely launched with inputs defined by file paths rather than from a data table). Please provide 'sample_table'."
             }
         }
     }
@@ -89,7 +101,7 @@ workflow Mad4HatterQcReport {
             neg_control_information = generate_qc_report.neg_control_information,
             workspace_name = select_first([workspace_name, get_terra_env_info.workspace_name]),
             workspace_billing_project = select_first([workspace_billing_project, get_terra_env_info.workspace_namespace]),
-            entity_type = sample_table,
+            entity_type = select_first([sample_table, get_terra_env_info.sample_table]),
             docker_image = docker_image
     }
 

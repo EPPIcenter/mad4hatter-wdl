@@ -27,12 +27,49 @@ There are **two alternative `01` workflows, one per panel**. They are the same u
 
 > **Two of these workflows write directly into your data tables** in addition to returning files. See the "Columns written directly into your data tables" section below for the full list.
 
+## Example data
+
+The workspace ships with example data for both panels, so you can run the whole sequence before bringing your own FASTQs. Each dataset has its own per-sample table and a set table; run the workflows on the **set** table.
+
+### MAD4HatTeR example — 5 samples
+
+| | |
+|---|---|
+| Per-sample table | `mad4hatter_sample` (5 rows) |
+| Set table | `mad4hatter_sample_set`, one set: `test_sample_set` |
+| Pair with | `01_Mad4Hatter` |
+| Source | [Brokhattingen, N., et al. (2024)](https://www.nature.com/articles/s41467-024-46535-x) |
+
+Row ids are SRA accessions carrying the sequencer suffix (`SRR26819135_S1_L001` … `SRR26819200_S5_L001`). The set is a deliberately small smoke test spanning the control types: one positive control, one negative control and three samples, at 50, 0, 100, 1000 and 10 parasites/µL. Its manifest has no `Run` column, so `sequencing_run` is left empty for these samples; everything else in the QC write-back is populated.
+
+### PfPHAST example — 429 samples from Uganda
+
+*Plasmodium falciparum* data from Uganda, suitable for sharing and for testing.
+
+| | |
+|---|---|
+| Per-sample table | `pfphast_sample` (429 rows) |
+| Set table | `pfphast_sample_set`, three sets (below) |
+| Pair with | `01_PfPhast` |
+
+| Set | Samples | Contents |
+|---|---|---|
+| `Good` | 192 | the higher-quality half |
+| `Poor` | 237 | the lower-quality half |
+| `UG_TEST_ALL` | 429 | both of the above |
+
+The split by data quality is the point of this dataset: `Good` and `Poor` exercise the QC thresholds differently, so they are useful for seeing what a failing run looks like as well as a passing one. **Each set carries its own manifest**, so a run only writes QC columns for that set's samples — launch `UG_TEST_ALL` if you want all 429 covered in one go.
+
+The samples span 3 sequencing runs (`UG_RUN_1` and `UG_RUN_2` at 96 each, `UG_RUN_3` at 237) across 5 batches, and comprise 402 samples, 18 negative controls and 9 positive controls. Beyond the pipeline columns, the table carries study metadata that no workflow writes or needs: district, region, endemicity, coordinates, site, sex, age and collection details.
+
+Both panels derive from the same modular design described in [Aranda-Díaz et al., *Scientific Reports* (2025)](https://www.nature.com/articles/s41598-025-94716-5).
+
 ## Creating and Setting Up Your Terra Workspace for Mad4Hatter
 
 If you don't have a Terra account, you can create an account by following the instructions [here](https://support.terra.bio/hc/en-us/articles/360028235911-How-to-register-on-Terra-Google-SSO). Otherwise sign in to your Terra account to proceed.
 
 ### Clone the Workspace
-To begin, clone this workspace by following [these directions](https://support.terra.bio/hc/en-us/articles/360026130851-How-to-clone-your-own-workspace). This workspace already has the Mad4Hatter workflows imported and contains an example dataset including 5 samples [Brokhattingen, N., et. al (2024)](https://www.nature.com/articles/s41467-024-46535-x).
+To begin, clone this workspace by following [these directions](https://support.terra.bio/hc/en-us/articles/360026130851-How-to-clone-your-own-workspace). The workflows are already imported and the workspace ships with example data for both panels — see the "Example data" section above.
 
 ### Importing New Data and Setting up Metadata
 To run `01_Mad4Hatter` on your own FASTQ files, follow [these directions](https://support.terra.bio/hc/en-us/articles/4419428208411-Upload-data-and-populate-the-table-with-linked-file-paths) until "Step 3. Upload Files" and continue below. `02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` use the outputs of a completed `01_Mad4Hatter` run, so they do not need a separate raw data upload; `02_AmpliconPanelQcReport` additionally needs a manifest file (see below).

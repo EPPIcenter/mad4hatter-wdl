@@ -62,7 +62,7 @@ Run **one** of these, whichever matches your panel. They differ only in the pres
 
 `02` and `03` read their inputs from columns that `01` writes onto the set row, so **`01` must run first** — on a freshly cloned workspace the set row holds only its sample membership and `02`/`03` have nothing to resolve yet.
 
-`02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` are configured against `mad4hatter_sample_set`. To run them on a PfPHAST set, select `pfphast_sample_set` when you launch, and change `03`'s `population_label` from `this.mad4hatter_sample_set_id` to `this.pfphast_sample_set_id` — that is the one input that names the table explicitly.
+`02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` are configured against `mad4hatter_sample_set`, but nothing in their inputs names a specific table — every file input is a `this.{column}` reference that resolves on whichever set you launch against. To run them on a PfPHAST set, just select `pfphast_sample_set` when you launch; no input edits are needed.
 
 1. Navigate to the **"Workflows"** tab in your Terra workspace.
 2. Select **`01_Mad4Hatter`** or **`01_PfPhast`**.
@@ -96,7 +96,12 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
 1. Navigate to the **"Workflows"** tab and select **`03_ExtractDrugResistanceMarkers`**.
 2. Select the same `YOUR_TABLE_set` table and the set row. That set must already have `01_Mad4Hatter` (or `01_PfPhast`) **and** `02_AmpliconPanelQcReport` outputs populated.
 3. Configure the inputs. `amplicon_info`, `filtered_allele_data` and `reference` are all available on the sample set row and should be set to `this.{column_name}`. Note `filtered_allele_data` comes from `02_AmpliconPanelQcReport`, not from the `01` panel workflow.
-4. `loci_groups` is a TSV/CSV defining multi-locus groups; an example is [here](https://github.com/PlasmoGenEpi/plasmodiumdrugres-wdl/blob/main/tests/input/example_loci_groups.tsv). `loci_of_interest_bed` is a BED of loci of interest; an example is [here](https://github.com/PlasmoGenEpi/plasmodiumdrugres-wdl/blob/main/tests/input/example_principal_resistance_marker_info_table.bed). Copy these (or your own) into the workspace bucket and select them with the "Browse bucket files" folder button next to the input.
+4. `loci_groups` and `loci_of_interest_bed` are already pointed at panel defaults in the public `broad-malaria-public` bucket, so you can leave them alone:
+
+   - `loci_groups` → `gs://broad-malaria-public/mad4hatter_workspace_data/default_loci_groups.tsv` — a TSV/CSV defining the multi-locus groups that multi-locus estimates are computed for.
+   - `loci_of_interest_bed` → `gs://broad-malaria-public/mad4hatter_workspace_data/default_principal_resistance_marker_info_table.bed` — a BED of the loci that single-locus estimates are computed at.
+
+   To use your own instead, upload them to the workspace bucket and select them with the "Browse bucket files" folder button next to the input. Reference examples live in the [plasmodiumdrugres-wdl repo](https://github.com/PlasmoGenEpi/plasmodiumdrugres-wdl/tree/main/tests/input).
 5. **Leave `billing_project`, `workspace_name`, `sample_table` and `workspace_bucket` empty** unless you need to override them — see [Workspace and table detection](#workspace-and-table-detection).
 6. Click **"Launch"**.
 7. View outputs in the **"Data"** tab: summary files on the sample set row, and per-sample `resmarker_*` columns on the per-sample table.
@@ -323,8 +328,8 @@ Translates amplicon sequences at loci of interest into amino acid calls, then es
 | **filtered_allele_data** | Allele table of microhaplotypes — the `filtered_allele_data` output of `02_AmpliconPanelQcReport`. Converted internally to the pipeline's specimen/target/reads/seq format. | File | Yes | - |
 | **amplicon_info** | Amplicon info table with `target_name`, `chrom`, `insert_start` and `insert_end` columns; used to build the panel BED. | File | Yes | - |
 | **reference** | Reference FASTA of insert sequences, one record per `target_name`. | File | Yes | - |
-| **loci_of_interest_bed** | BED of loci of interest; single-locus estimates are computed at these loci. | File | Yes | - |
-| **loci_groups** | TSV/CSV defining multi-locus groups; multi-locus estimates are computed for these groups. | File | Yes | - |
+| **loci_of_interest_bed** | BED of loci of interest; single-locus estimates are computed at these loci. Preconfigured to `gs://broad-malaria-public/mad4hatter_workspace_data/default_principal_resistance_marker_info_table.bed`. | File | Yes | preconfigured |
+| **loci_groups** | TSV/CSV defining multi-locus groups; multi-locus estimates are computed for these groups. Preconfigured to `gs://broad-malaria-public/mad4hatter_workspace_data/default_loci_groups.tsv`. | File | Yes | preconfigured |
 | **billing_project** | Terra billing project of the workspace whose data table is updated. Detected from the running submission when omitted. | String? | No | (detected) |
 | **workspace_name** | Name of the Terra workspace whose data table is updated. Detected from the running submission when omitted. | String? | No | (detected) |
 | **sample_table** | Terra data table the resmarker columns are written to. Detected from the submission's root entity when omitted. The row id column is always `<sample_table>_id`. | String? | No | (detected) |
@@ -333,7 +338,7 @@ Translates amplicon sequences at loci of interest into amino acid calls, then es
 | **population_assignment** | TSV/CSV mapping `specimen_name` to `population`; enables per-population results. | File? | No | - |
 | **pmo_population_fields** | Comma-separated PMO specimen metadata fields used to build the population label; used only when `pmo` is given and `population_assignment` is not. | String? | No | - |
 | **pmo_population_separator** | Join string used when building the population label from `pmo_population_fields`. | String | No | `_` |
-| **population_label** | Population label used when no population assignment is available. Often set to `this.<your_table>_set_id`. | String | No | pop1 |
+| **population_label** | Population label used when no population assignment is available; it becomes the population name in `ml_summary` / `sl_summary`. Left blank in this workspace, so the default applies. Set it to `this.<your_table>_set_id` if you would rather the summaries be labelled by set name — but that expression names one table, so it has to change per panel. | String | No | pop1 |
 | **targeted_reference** | FASTA containing only the targets (PMO mode); preferred over `genome_reference` if both are given. | File? | No | - |
 | **genome_reference** | FASTA containing the full genome (PMO mode). | File? | No | - |
 | **mlaf_method** | Multi-locus allele frequency method: `naive`, `MLBM` or `FEM`. | String | No | naive |

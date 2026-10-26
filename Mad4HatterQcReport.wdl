@@ -2,7 +2,7 @@ version 1.0
 
 import "modules/local/generate_qc_report.wdl" as GenerateQcReport
 import "modules/local/write_metrics_to_workspace_table.wdl" as WriteMetricsToWorkspaceTable
-import "modules/local/check_terra_env.wdl" as CheckTerraEnv
+import "modules/local/get_terra_env_info.wdl" as GetTerraEnvInfo
 import "modules/local/error_with_message.wdl" as ErrorWithMessage
 
 workflow Mad4HatterQcReport {
@@ -46,9 +46,9 @@ workflow Mad4HatterQcReport {
 
     # Determine the workspace we are running in when the caller did not say.
     if (!defined(workspace_name) || !defined(workspace_billing_project)) {
-        call CheckTerraEnv.check_terra_env {}
+        call GetTerraEnvInfo.get_terra_env_info {}
 
-        if (!check_terra_env.is_running_on_terra) {
+        if (!get_terra_env_info.is_running_on_terra) {
             call ErrorWithMessage.error_with_message as not_running_on_terra {
                 input:
                     message = "Error: 'workspace_name' and/or 'workspace_billing_project' was not provided, and this run is not on Terra so they cannot be determined automatically. Please provide both inputs."
@@ -87,8 +87,8 @@ workflow Mad4HatterQcReport {
             sample_read_counts = generate_qc_report.sample_read_counts,
             polyclonal_information = generate_qc_report.polyclonal_information,
             neg_control_information = generate_qc_report.neg_control_information,
-            workspace_name = select_first([workspace_name, check_terra_env.workspace_name]),
-            workspace_billing_project = select_first([workspace_billing_project, check_terra_env.workspace_namespace]),
+            workspace_name = select_first([workspace_name, get_terra_env_info.workspace_name]),
+            workspace_billing_project = select_first([workspace_billing_project, get_terra_env_info.workspace_namespace]),
             entity_type = sample_table,
             docker_image = docker_image
     }

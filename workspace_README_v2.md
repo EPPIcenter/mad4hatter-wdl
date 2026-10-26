@@ -80,7 +80,9 @@ Run **one** of these, whichever matches your panel. They differ only in the pres
 ### Running 02_AmpliconPanelQcReport
 
 #### Step 1: Upload Your Manifest File
-`02_AmpliconPanelQcReport` needs a manifest TSV describing the samples in the run. Upload it to the workspace bucket and reference it in the `manifest` input. The `pfphast_sample_set` rows carry theirs in a `qc_manifest` column, so for those you can point `manifest` at `this.qc_manifest` instead of a literal path. Required columns are `sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia`; `Run` is used for `sequencing_run` when present.
+`02_AmpliconPanelQcReport` needs a manifest TSV describing the samples in the run, with the columns `sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia` and optionally `Run` (which populates `sequencing_run`; omit it and that column is left empty).
+
+Every set row in this workspace carries its manifest in a **`qc_manifest`** column, and the `manifest` input is set to `this.qc_manifest`, so there is nothing to configure. For your own data, upload the manifest to the workspace bucket and put its path in a `qc_manifest` column on the set row. Note each set uses its own manifest, so a run only writes QC columns for the samples that set's manifest covers. Required columns are `sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia`; `Run` is used for `sequencing_run` when present.
 
 #### Step 2: Setting up and running the workflow
 1. Navigate to the **"Workflows"** tab and select **`02_AmpliconPanelQcReport`**.

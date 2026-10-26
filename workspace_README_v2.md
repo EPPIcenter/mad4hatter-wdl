@@ -57,8 +57,12 @@ Run **one** of these, whichever matches your panel. They differ only in the pres
 
 | Workflow | Panel | Preset `pools` | Data table |
 |---|---|---|---|
-| `01_Mad4Hatter` | MAD4HatTeR | `["D1.1", "R1.2", "R2.1"]` | `mad4hatter_sample_set` |
-| `01_PfPhast` | PfPHAST | `["M1.1", "M2.1"]` | `pfphast_sample_set` |
+| `01_Mad4Hatter` | MAD4HatTeR | `["D1.1", "R1.2", "R2.1"]` | `mad4hatter_sample_set` (5 samples) |
+| `01_PfPhast` | PfPHAST | `["M1.1", "M2.1"]` | `pfphast_sample_set` (3 sets over 429 samples) |
+
+`02` and `03` read their inputs from columns that `01` writes onto the set row, so **`01` must run first** — on a freshly cloned workspace the set row holds only its sample membership and `02`/`03` have nothing to resolve yet.
+
+`02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` are configured against `mad4hatter_sample_set`. To run them on a PfPHAST set, select `pfphast_sample_set` when you launch, and change `03`'s `population_label` from `this.mad4hatter_sample_set_id` to `this.pfphast_sample_set_id` — that is the one input that names the table explicitly.
 
 1. Navigate to the **"Workflows"** tab in your Terra workspace.
 2. Select **`01_Mad4Hatter`** or **`01_PfPhast`**.
@@ -69,14 +73,14 @@ Run **one** of these, whichever matches your panel. They differ only in the pres
 
 3. Select the data table that is named like `YOUR_TABLE_set`. This is the table containing your forward and reverse reads, with `_set` appended to the original table name. For example, if your table is named `mad4hatter_sample`, select `mad4hatter_sample_set`. Running it as a set lets the workflow treat all forward/reverse read pairs as one coherent dataset, rather than as a bunch of unrelated samples.
 4. Click **"Select Data"** and choose the set row to run on.
-5. Check the inputs. `forward_fastqs` and `reverse_fastqs` reference the read columns of the member table, e.g. `this.mad4hatter_samples.read1` and `this.mad4hatter_samples.read2` — the membership attribute name comes from your own table, so confirm it matches. `pools` is already preset for the panel, so you normally leave it alone (see [Pool Options](#pool-options) if you need to change it). `output_directory` is a plain subdirectory name such as `"outputs"` — see the note on that input below.
+5. Check the inputs. `forward_fastqs` and `reverse_fastqs` reference the read columns of the member table through the set's membership attribute — in this workspace both set tables use `samples`, so they are `this.samples.read1` and `this.samples.read2`. If you build your own set table the membership attribute is named after it, so confirm the expression matches. `pools` is already preset for the panel, so you normally leave it alone (see [Pool Options](#pool-options) if you need to change it). `output_directory` is a plain subdirectory name such as `"outputs"` — see the note on that input below.
 6. Click **"Launch"**, then monitor progress in the **"Submission History"** tab.
 7. When it finishes, the output paths are written onto the sample set row in the **"Data"** tab.
 
 ### Running 02_AmpliconPanelQcReport
 
 #### Step 1: Upload Your Manifest File
-`02_AmpliconPanelQcReport` needs a manifest TSV describing the samples in the run. Upload it to the workspace bucket and reference it in the `manifest` input. Required columns are `sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia`; `Run` is used for `sequencing_run` when present.
+`02_AmpliconPanelQcReport` needs a manifest TSV describing the samples in the run. Upload it to the workspace bucket and reference it in the `manifest` input. The `pfphast_sample_set` rows carry theirs in a `qc_manifest` column, so for those you can point `manifest` at `this.qc_manifest` instead of a literal path. Required columns are `sample_name`, `SampleType`, `Batch`, `Column`, `Row`, `Parasitemia`; `Run` is used for `sequencing_run` when present.
 
 #### Step 2: Setting up and running the workflow
 1. Navigate to the **"Workflows"** tab and select **`02_AmpliconPanelQcReport`**.

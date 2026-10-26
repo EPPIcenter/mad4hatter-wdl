@@ -60,7 +60,7 @@ workflow Mad4HatterQcReport {
         # The submission's root entity is what names the data table, so a
         # workflow launched from file paths rather than from a data table has
         # nothing to detect.
-        if (!defined(sample_table) && get_terra_env_info.sample_table == "") {
+        if (!defined(sample_table) && get_terra_env_info.is_running_on_terra && get_terra_env_info.sample_table == "") {
             call ErrorWithMessage.error_with_message as no_sample_table {
                 input:
                     message = "Error: 'sample_table' was not provided and this submission has no root entity to infer it from (it was most likely launched with inputs defined by file paths rather than from a data table). Please provide 'sample_table'."

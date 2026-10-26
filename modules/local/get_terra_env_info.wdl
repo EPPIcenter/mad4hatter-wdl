@@ -16,13 +16,11 @@ task get_terra_env_info {
     parameter_meta {
         namespace:    "Optional Terra billing project / namespace override. Auto-detected when omitted."
         workspace:    "Optional workspace name override. Auto-detected when omitted."
-        docker_image: "Image with python3 (>=3.6); the task is pure stdlib (no gcloud/jq/curl/fiss). Defaults to a GCR-hosted image that has python3; override to reuse an image already pulled by the pipeline."
     }
 
     input {
         String? namespace
         String? workspace
-        String  docker_image = "us.gcr.io/broad-dsp-lrma/lr-backup-workspace:0.0.1"
     }
 
     command <<<
@@ -250,7 +248,7 @@ task get_terra_env_info {
     }
 
     runtime {
-        docker: docker_image
+        docker: "us.gcr.io/broad-dsp-lrma/lr-backup-workspace:0.0.1"
         memory: "2 GiB"
         cpu: 1
         maxRetries: 2

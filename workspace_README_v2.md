@@ -25,7 +25,7 @@ There are **two alternative `01` workflows, one per panel**. They are the same u
 
 * **`03_ExtractDrugResistanceMarkers`** — Takes a *Plasmodium* amplicon allele table (or PMO file) and translates the amplicon sequences at loci of interest into amino acid calls, giving per-sample drug-resistance marker calls. It then estimates resistance allele frequencies from those calls, per population when a population assignment is given, producing single-locus and multi-locus frequencies for defined loci groups. Summary tables are linked through the sample set table, and **per-sample amino acid calls are written back onto the per-sample data table**.
 
-> **Two of these workflows write directly into your data tables** in addition to returning files. See [Columns written directly into your data tables](#columns-written-directly-into-your-data-tables) for the full list.
+> **Two of these workflows write directly into your data tables** in addition to returning files. See the "Columns written directly into your data tables" section below for the full list.
 
 ## Creating and Setting Up Your Terra Workspace for Mad4Hatter
 
@@ -73,7 +73,7 @@ Run **one** of these, whichever matches your panel. They differ only in the pres
 
 3. Select the data table that is named like `YOUR_TABLE_set`. This is the table containing your forward and reverse reads, with `_set` appended to the original table name. For example, if your table is named `mad4hatter_sample`, select `mad4hatter_sample_set`. Running it as a set lets the workflow treat all forward/reverse read pairs as one coherent dataset, rather than as a bunch of unrelated samples.
 4. Click **"Select Data"** and choose the set row to run on.
-5. Check the inputs. `forward_fastqs` and `reverse_fastqs` reference the read columns of the member table through the set's membership attribute — in this workspace both set tables use `samples`, so they are `this.samples.read1` and `this.samples.read2`. If you build your own set table the membership attribute is named after it, so confirm the expression matches. `pools` is already preset for the panel, so you normally leave it alone (see [Pool Options](#pool-options) if you need to change it). `output_directory` is a plain subdirectory name such as `"outputs"` — see the note on that input below.
+5. Check the inputs. `forward_fastqs` and `reverse_fastqs` reference the read columns of the member table through the set's membership attribute — in this workspace both set tables use `samples`, so they are `this.samples.read1` and `this.samples.read2`. If you build your own set table the membership attribute is named after it, so confirm the expression matches. `pools` is already preset for the panel, so you normally leave it alone (see the "Pool Options" section below if you need to change it). `output_directory` is a plain subdirectory name such as `"outputs"` — see the note on that input below.
 6. Click **"Launch"**, then monitor progress in the **"Submission History"** tab.
 7. When it finishes, the output paths are written onto the sample set row in the **"Data"** tab.
 
@@ -88,7 +88,7 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
 1. Navigate to the **"Workflows"** tab and select **`02_AmpliconPanelQcReport`**.
 2. Select the same `YOUR_TABLE_set` table and the set row you ran `01_Mad4Hatter` or `01_PfPhast` on.
 3. Configure the inputs. The seven file inputs (`sample_coverage`, `amplicon_coverage`, `allele_data`, `allele_table_collapsed`, `amplicon_info`, `resmarker_table`, `resmarker_microhaplotype_table`) are all available on the sample set row and should be set to `this.{column_name}`, e.g. `this.allele_data`. Add the `manifest` file.
-4. **Leave `workspace_name`, `workspace_billing_project` and `sample_table` empty** unless you need to override them. The workflow detects the workspace it is running in and the data table the run was launched from. See [Workspace and table detection](#workspace-and-table-detection).
+4. **Leave `workspace_name`, `workspace_billing_project` and `sample_table` empty** unless you need to override them. The workflow detects the workspace it is running in and the data table the run was launched from. See the "Workspace and table detection" section below.
 5. Click **"Launch"**.
 6. When it finishes, review `qc_report_html` and the per-sample QC columns written onto your data table before continuing.
 
@@ -102,7 +102,7 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
    - `loci_of_interest_bed` → `gs://broad-malaria-public/mad4hatter_workspace_data/default_principal_resistance_marker_info_table.bed` — a BED of the loci that single-locus estimates are computed at.
 
    To use your own instead, upload them to the workspace bucket and select them with the "Browse bucket files" folder button next to the input. Reference examples live in the [plasmodiumdrugres-wdl repo](https://github.com/PlasmoGenEpi/plasmodiumdrugres-wdl/tree/main/tests/input).
-5. **Leave `billing_project`, `workspace_name`, `sample_table` and `workspace_bucket` empty** unless you need to override them — see [Workspace and table detection](#workspace-and-table-detection).
+5. **Leave `billing_project`, `workspace_name`, `sample_table` and `workspace_bucket` empty** unless you need to override them — see the "Workspace and table detection" section below.
 6. Click **"Launch"**.
 7. View outputs in the **"Data"** tab: summary files on the sample set row, and per-sample `resmarker_*` columns on the per-sample table.
 
@@ -303,7 +303,7 @@ Advanced, task-level overrides also exist (`get_terra_env_info.namespace`, `get_
 
 ##### Writes directly into data tables:
 
-In addition to the file outputs above, this workflow upserts one row per sample onto `sample_table`, using the credentials of the Cromwell task's attached service account. Row ids are matched to the existing table before writing (see [Workspace and table detection](#workspace-and-table-detection)).
+In addition to the file outputs above, this workflow upserts one row per sample onto `sample_table`, using the credentials of the Cromwell task's attached service account. Row ids are matched to the existing table before writing (see the "Workspace and table detection" section above).
 
 | Column                       | Description                                                                                       |
 |------------------------------|---------------------------------------------------------------------------------------------------|

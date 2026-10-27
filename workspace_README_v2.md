@@ -169,12 +169,35 @@ Three inputs control which samples are reported, in order of precedence:
 | `sample_id_list` (`File`) | a curated file, one id per line, `#` comments allowed |
 | *(neither)* | every sample in the input |
 
-The workflow's own documentation suggests `this.samples.sample_id` for a sample set, but
-the attribute is named after your member table — in this workspace it is
-`this.samples.pfphast_sample_id` for the PfPHAST sets and
-`this.samples.mad4hatter_sample_id` for the MAD4HatTeR set. Check the name against your
-own table before using it; an expression that does not resolve silently yields an empty
-array rather than an error.
+> ### ⚠️ If you use `sample_ids`, the expression must name your own table
+>
+> The id attribute is named after the member table, so **there is no single expression
+> that works everywhere** — you have to build it from the table you are running on:
+>
+> ```
+> this.<membership attribute>.<member table>_id
+> ```
+>
+> In this workspace both set tables use `samples` as the membership attribute, which gives:
+>
+> | Set table you launch on | Member table | Expression to use |
+> |---|---|---|
+> | `mad4hatter_sample_set` | `mad4hatter_sample` | `this.samples.mad4hatter_sample_id` |
+> | `pfphast_sample_set` | `pfphast_sample` | `this.samples.pfphast_sample_id` |
+>
+> For a table you built yourself, read both names off the **Data** tab: the membership
+> attribute is the column on the set row listing its members, and the member table is the
+> table those entries point at. A set table named `my_samples_set` whose membership column
+> is `my_sampless` would need `this.my_sampless.my_samples_id`.
+>
+> **Getting this wrong fails silently.** Terra resolves an expression that matches no
+> attribute to an **empty array**, not an error — so the workflow runs, reports on every
+> sample in the input instead of your selection, and never tells you. The workflow's own
+> parameter help says `this.samples.sample_id`, which is a generic placeholder and will
+> **not** work here.
+>
+> Leave `sample_ids` empty if you want the whole input; that is a valid choice and avoids
+> the problem entirely.
 
 ## Workspace and table detection
 

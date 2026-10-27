@@ -183,15 +183,40 @@ task get_terra_env_info {
             write("top_level_submission_id.txt", submission_id)
             sub = api_get(FIRECLOUD + "/api/workspaces/" + q(namespace) + "/" +
                           q(name) + "/submissions/" + submission_id, token)
-            se = sub.get("submissionEntity") or {}
-            root_type = se.get("entityType", "")
-            root_name = se.get("entityName", "")
-            write("input_row_id.txt", root_name)
+            # Prefer the per-workflow entities over submissionEntity. When several rows
+            # are launched at once Terra wraps them in a transient <type>_set entity
+            # named after the method config, then deletes it, so submissionEntity points
+            # at something that no longer exists. The per-workflow entity is the real
+            # row, and all workflows in a submission share one entity type, so the first
+            # is enough to find the member table.
+            entities = [w["workflowEntity"] for w in (sub.get("workflows") or [])
+                        if w.get("workflowEntity")]
+            if entities:
+                root_type = entities[0].get("entityType", "")
+                root_name = entities[0].get("entityName", "")
+                row_ids = ",".join(e.get("entityName", "") for e in entities)
+            else:
+                se = sub.get("submissionEntity") or {}
+                root_type = se.get("entityType", "")
+                root_name = se.get("entityName", "")
+                row_ids = root_name
+            write("input_row_id.txt", row_ids)
             sample_table = ""
             if root_type.endswith("_set") and root_name:
-                ent = api_get(FIRECLOUD + "/api/workspaces/" + q(namespace) + "/" +
-                              q(name) + "/entities/" + q(root_type) + "/" + q(root_name),
-                              token)
+                try:
+                    ent = api_get(FIRECLOUD + "/api/workspaces/" + q(namespace) + "/" +
+                                  q(name) + "/entities/" + q(root_type) + "/" + q(root_name),
+                                  token)
+                except Exception as e:
+                    # Table detection is best-effort. Leave it undetected and exit clean
+                    # rather than killing the run on a traceback; every other output has
+                    # already been written, and the caller fails with its own message if
+                    # it actually needed sample_table.
+                    sys.stderr.write("WARNING: could not read root entity %s/%s (%s); "
+                                     "sample_table left undetected.\n"
+                                     % (root_type, root_name, e))
+                    write("sample_table.txt", "")
+                    sys.exit(0)
                 ea = ent.get("attributes", {}) or {}
                 ref_member = {k: v["items"][0]["entityType"]
                               for k, v in ea.items()

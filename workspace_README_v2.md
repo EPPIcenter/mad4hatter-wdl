@@ -13,7 +13,7 @@ Comprehensive documentation can be found [here](https://eppicenter.github.io/won
 
 ## Overview of workflows:
 
-**The numeric prefix is the run order** — run `01`, then `02`, then `03`. Workflows without a numeric prefix are not part of the supported sequence.
+**The numeric prefix is the run order** — run `01`, then `02`, then `03`, then `04`. Workflows without a numeric prefix are not part of the supported sequence.
 
 There are **two alternative `01` workflows, one per panel**. They are the same underlying pipeline with the pools preconfigured, so pick the one matching your panel and run only that one. Both feed the same `02` and `03`.
 
@@ -24,6 +24,8 @@ There are **two alternative `01` workflows, one per panel**. They are the same u
 * **`02_AmpliconPanelQcReport`** — Generates the QC report for a single completed `01_Mad4Hatter` run (one sample set at a time), produces filtered copies of the allele and resistance-marker tables, and **writes per-sample QC metrics back onto the per-sample data table**. It takes the outputs of `01_Mad4Hatter` as input rather than FASTQs.
 
 * **`03_ExtractDrugResistanceMarkers`** — Takes a *Plasmodium* amplicon allele table (or PMO file) and translates the amplicon sequences at loci of interest into amino acid calls, giving per-sample drug-resistance marker calls. It then estimates resistance allele frequencies from those calls, per population when a population assignment is given, producing single-locus and multi-locus frequencies for defined loci groups. Summary tables are linked through the sample set table, and **per-sample amino acid calls are written back onto the per-sample data table**.
+
+* **`04_GenerateReport`** — Builds a malaria molecular-surveillance report for the cohort: a single self-contained HTML report, the data model behind every number in it, dashboard-ready export tables (WHO Malaria Threats Map, DHIS2, Africa CDC, PHA4GE) and a location-resolution audit. It reads the **per-sample data table** rather than files, so it consumes what `02` and `03` wrote back — which is why those two steps must run first.
 
 > **Two of these workflows write directly into your data tables** in addition to returning files. See the "Columns written directly into your data tables" section below for the full list.
 
@@ -143,6 +145,37 @@ Every set row in this workspace carries its manifest in a **`qc_manifest`** colu
 6. Click **"Launch"**.
 7. View outputs in the **"Data"** tab: summary files on the sample set row, and per-sample `resmarker_*` columns on the per-sample table.
 
+### Running 04_GenerateReport
+1. Navigate to the **"Workflows"** tab and select **`04_GenerateReport`**.
+2. Select the same `YOUR_TABLE_set` table and the set row you ran the earlier steps on.
+3. `cohort_name` is the only required input and is already set to the set's own id
+   (`this.<your_table>_set_id`), which names the output files and the output directory.
+4. **Leave `resmarker_tables` empty.** That is the signal to fetch the per-sample table
+   from the data model: the workflow self-identifies the workspace, table and submission
+   it was launched from and pulls the rows directly, so it picks up the QC columns from
+   `02` and the `resmarker_*` columns from `03` with nothing to wire up.
+5. Optionally name the cohort selection for the report banner with `selection_label`, and
+   scope the report to specific samples with `sample_ids` or `sample_id_list` — see the
+   note on sample selection below. Left empty, every sample in the input is reported.
+6. Click **"Launch"**. When it finishes, open `report_html` from the set row.
+
+##### Sample selection
+
+Three inputs control which samples are reported, in order of precedence:
+
+| Input | Use |
+|---|---|
+| `sample_ids` (`Array[String]`) | a set's membership, passed as a Terra expression |
+| `sample_id_list` (`File`) | a curated file, one id per line, `#` comments allowed |
+| *(neither)* | every sample in the input |
+
+The workflow's own documentation suggests `this.samples.sample_id` for a sample set, but
+the attribute is named after your member table — in this workspace it is
+`this.samples.pfphast_sample_id` for the PfPHAST sets and
+`this.samples.mad4hatter_sample_id` for the MAD4HatTeR set. Check the name against your
+own table before using it; an expression that does not resolve silently yields an empty
+array rather than an error.
+
 ## Workspace and table detection
 
 `02_AmpliconPanelQcReport` and `03_ExtractDrugResistanceMarkers` write back into your data tables, so they need to know which workspace and which table to write to. **Both now detect this automatically** and all of the following inputs are optional:
@@ -220,6 +253,7 @@ The workflows in this workspace are configured against the following versions:
 | `01_PfPhast` | `github.com/EPPIcenter/mad4hatter-wdl/Mad4Hatter` | `v1.0.4` |
 | `02_AmpliconPanelQcReport` | `github.com/EPPIcenter/mad4hatter-wdl/Mad4HatterQcReport` | `JTS_hotfixes` |
 | `03_ExtractDrugResistanceMarkers` | `github.com/jonn-smith/plasmodiumdrugres-wdl/plasmodiumdrugres` | `jts_hotfixes` |
+| `04_GenerateReport` | `github.com/jonn-smith/tmp_malaria_reports/MalariaSurveillanceReportAmplicon` | `feature/terra-sample-tables` |
 
 If you need to update to a new version follow [these instructions](https://support.terra.bio/hc/en-us/articles/360026443092-Updating-workflows-to-the-latest-version).
 
@@ -410,6 +444,52 @@ For each specimen, the workflow adds one column to `sample_table` for every gene
 |---|---|
 | **resmarker_&lt;gene&gt;_&lt;aa_position&gt;** | That specimen's amino acid call at the position, e.g. `resmarker_dhfr-ts_164`. Mixed calls are the distinct values sorted and joined with `/`, e.g. `F/Y`. One column per called gene/position, so this can add many columns. |
 
+### 04_GenerateReport
+
+Builds the surveillance report for the cohort. The panel is **detected from the loci present
+in the input**, so one workflow serves MAD4HatTeR, PfPHAST and panels that are not
+catalogued; `assay` lets you declare it instead, and any disagreement with the detected
+panel is reported rather than hidden.
+
+##### Inputs:
+
+| Input Name | Description | Type | Required | Default |
+|---|---|---|---|---|
+| **cohort_name** | Cohort label; used in the output directory path and the output filenames. Preconfigured to the set's own id. | String | Yes | `this.<table>_set_id` |
+| **resmarker_tables** | Per-run resistance-marker tables (`resmarker_table.txt`). **Leave empty on Terra** — that is what triggers fetching the per-sample table from the data model. | Array[File] | No | `[]` |
+| **allele_tables** | Microhaplotype allele tables (`allele_data.txt`). | Array[File] | No | `[]` |
+| **assay** | Panel declaration. The default detects the panel from the loci; `MAD4HATTER` or `PFPHAST` declares it explicitly. | String | No | AMPLICON |
+| **sample_ids** | Sample ids to report on. Empty means every sample in the input. See the sample-selection note above. | Array[String] | No | `[]` |
+| **sample_id_list** | Alternative to `sample_ids`: a file with one sample id per line (`#` comments allowed). | File? | No | - |
+| **selection_label** | Human-readable name for the sample selection, shown in the report (e.g. the sample set name). | String? | No | - |
+| **sample_table** | Override the per-sample table to read. Detected from the submission when omitted. | String? | No | (detected) |
+| **entity_set_type** | Override the set table type when fetching from the data model. | String? | No | (detected) |
+| **entity_set_name** | Override the set row name when fetching from the data model. | String? | No | (detected) |
+| **site_metadata** | Per-sample site and coordinate table. Optional when the per-sample table already carries geography. | File? | No | - |
+| **country_iso3** | ISO3 code selecting the admin-2 boundary set. 51 malaria-endemic African countries ship in the image. | String? | No | SEN |
+| **country_name** | Country name shown in the report. | String? | No | - |
+| **version_label** | Version string stamped on the report (e.g. `v0.12`). | String? | No | - |
+| **data_source** | Provenance line in the report banner. Omit it and the workflow stamps the workspace, table and submission it ran from. | String? | No | (detected) |
+| **render_config_json** | JSON settings for the renderer. Unrecognised keys pass through to the report metadata, so new rendering features need no interface change. | File? | No | - |
+| **report_template_override** | Replacement report template (HTML); omit to use the template pinned by the docker image. | File? | No | - |
+| **reference_bundle_tar** | `tar(.gz)` of replacement reference data (admin boundaries, WHO compendium); omit to use the bundle pinned by the image. | File? | No | - |
+| **gcs_out_root_dir** | GCS bucket to copy the report into. Omit to leave the outputs in the execution directory. | String? | No | - |
+
+##### Outputs:
+
+| Output Name | Description | Type |
+|---|---|---|
+| **report_html** | Self-contained single-file HTML surveillance report. | File |
+| **report_data_json** | The report's data model — every number the report draws. | File |
+| **export_csvs** | Dashboard-ready export tables, one CSV per view: WHO Malaria Threats Map, DHIS2, Africa CDC, PHA4GE. | Array[File] |
+| **location_audit** | Location-resolution audit: how samples were placed, plus every unplaced name, coordinate/name disagreement and region mismatch. | File |
+| **finalized_dir** | GCS directory the outputs were copied into. Populated only when `gcs_out_root_dir` is given. | String? |
+
+##### Writes directly into data tables:
+
+**None.** `04_GenerateReport` is the only step that *reads* the per-sample table as its
+input rather than writing to it.
+
 ## Columns written directly into your data tables
 
 Two of these workflows write into your data tables as a side effect, over the Terra API, in addition to the files they return through output mappings. These columns do **not** appear in the workflow's output list, so they are easy to miss.
@@ -419,6 +499,7 @@ Two of these workflows write into your data tables as a side effect, over the Te
 | `01_Mad4Hatter` / `01_PfPhast` | none | — |
 | `02_AmpliconPanelQcReport` | per-sample table (`sample_table`) | `Library_sample_name`, `Library_sample_qc_status`, `mean_prop_good_loci`, `postprocessed_read_count`, `batch_pass`, `sample_type`, `batch`, `parasites_per_ul`, `sequencing_run` |
 | `03_ExtractDrugResistanceMarkers` | per-sample table (`sample_table`) | `resmarker_<gene>_<aa_position>`, one per called gene/position |
+| `04_GenerateReport` | none — it **reads** the table | *(consumes the columns above)* |
 
 Three things to know about these writes:
 
